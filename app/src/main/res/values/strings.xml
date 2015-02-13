@@ -2,7 +2,10 @@
 <resources>
 
     <string name="app_name">LostPhone</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="wrongPin">Špatný pin!</string>
     <string name="action_settings">Settings</string>
+    <string name="btnOwnerCallText">Zavolat majiteli</string>
+    <string name="btnUnlockText">Odemknout</string>
+    <string name="editUnlockHint">Zadajte PIN</string>
 
 </resources>
