@@ -16,7 +16,7 @@
         android:layout_height="200dp"
         android:id="@+id/image"
         android:src="@drawable/lock"
-        android:scaleType="centerCrop"
+        android:scaleType="centerInside"
          />
 
     <Button

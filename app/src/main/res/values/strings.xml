@@ -7,5 +7,10 @@
     <string name="btnOwnerCallText">Zavolat majiteli</string>
     <string name="btnUnlockText">Odemknout</string>
     <string name="editUnlockHint">Zadajte PIN</string>
+    <string name="title_activity_ringing">RingingActivity</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="btnGotchaText">Mám tě!</string>
+    <string name="title_activity_main">MainActivity</string>
 
 </resources>
