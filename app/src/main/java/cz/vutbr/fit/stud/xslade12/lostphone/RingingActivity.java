@@ -9,9 +9,11 @@ import android.graphics.drawable.ColorDrawable;
 import android.hardware.Camera;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -33,6 +35,8 @@ public class RingingActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ringing);
 
+        makeFullScreen();
+
         soundOn();
         flashLightOn();
         backgroundBlinkingOn();
@@ -46,6 +50,16 @@ public class RingingActivity extends Activity {
         soundOff();
         flashLightOff();
         vibratorOff();
+    }
+
+    /**
+     * A simple method that sets the screen to fullscreen.  It removes the Notifications bar,
+     *   the Actionbar and the virtual keys (if they are on the phone)
+     */
+    public void makeFullScreen() {
+        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON, WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
     }
 
     public void onClickBtnGotcha(View view) {

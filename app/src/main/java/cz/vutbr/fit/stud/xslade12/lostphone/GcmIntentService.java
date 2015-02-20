@@ -79,7 +79,9 @@ public class GcmIntentService extends IntentService {
 
                 // Zpracuje pozadavek
                 Request request = Request.createFromBundle(extras);
-                Worker.run(this, request);
+
+                Worker worker = new Worker(this);
+                worker.proccess(request);
 
                 Log.i(TAG, "Completed work @ " + SystemClock.elapsedRealtime());
                 // Post notification of received message.
