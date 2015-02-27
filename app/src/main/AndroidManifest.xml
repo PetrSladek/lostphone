@@ -11,6 +11,10 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.INTERNET"/>
 
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+
+
+
     <!-- Required for applications which use Google Play Services. -->
     <meta-data
         android:name="com.google.android.gms.version"
@@ -37,7 +41,9 @@
         <activity
             android:name=".LockScreenActivity"
             android:label="@string/app_name"
-            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" >
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
+            android:showOnLockScreen="true"
+            >
         </activity>
 
         <service android:name=".LockScreenService" />
@@ -47,6 +53,11 @@
             android:enabled="true" >
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.ACTION_SCREEN_ON" />
+                <action android:name="android.intent.action.ACTION_SCREEN_OFF" />
+                <action android:name="android.intent.action.ACTION_DREAMING_STARTED" />
+                <action android:name="android.intent.action.ACTION_DREAMING_STOPPED" />
+
             </intent-filter>
         </receiver>
 
@@ -83,6 +94,32 @@
         </receiver>
 
         <service android:name=".GcmIntentService" />
+
+
+
+        <receiver
+            android:name=".MyDevicePolicyReceiver"
+            android:description="@string/device_admin_description"
+            android:label="@string/device_admin"
+            android:permission="android.permission.BIND_DEVICE_ADMIN" >
+            <meta-data
+                android:name="android.app.device_admin"
+                android:resource="@xml/device_policies" />
+
+            <intent-filter>
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
+                <action android:name="android.app.action.DEVICE_ADMIN_DISABLE_REQUESTED" />
+                <action android:name="android.app.action.DEVICE_ADMIN_DISABLED" />
+                <action android:name="android.app.action.ACTION_PASSWORD_CHANGED" />
+                <action android:name="android.app.action.ACTION_PASSWORD_EXPIRING" />
+                <action android:name="android.app.action.ACTION_PASSWORD_FAILED" />
+                <action android:name="android.app.action.ACTION_PASSWORD_SUCCEEDED" />
+
+                <action android:name="android.app.action.LOCK_TASK_ENTERING" />
+                <action android:name="android.app.action.LOCK_TASK_EXITING" />
+                <action android:name="android.app.extra.LOCK_TASK_PACKAGE" />
+            </intent-filter>
+        </receiver>
 
 
 

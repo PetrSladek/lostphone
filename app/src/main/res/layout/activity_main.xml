@@ -35,4 +35,32 @@
         android:id="@+id/btnStartDemoActivity"
         android:onClick="onClickBtnStart" />
 
+    <!--<Button-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_centerInParent="true"-->
+        <!--android:text="DemoActivity"-->
+        <!--android:id="@+id/btnAddDeviceAdmin"-->
+        <!--android:onClick="onClickBtnStart" />-->
+
+    <CheckBox
+        android:id="@+id/checkBoxDevicePolicyEnabled"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/line"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="15dp"
+        android:text="My Device Admin Enabled"
+        android:textStyle="bold" />
+
+    <CheckBox
+        android:id="@+id/checkBoxGCMRegistered"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/line"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="15dp"
+        android:text="Google Cloud Messaging registered"
+        android:textStyle="bold" />
+
 </LinearLayout>

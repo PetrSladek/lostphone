@@ -39,7 +39,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class DemoActivity extends Activity {
 
-    public static final String EXTRA_MESSAGE = "message";
+//    public static final String EXTRA_MESSAGE = "message";
     public static final String PROPERTY_REG_ID = "registration_id";
     private static final String PROPERTY_APP_VERSION = "appVersion";
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;

@@ -13,4 +13,9 @@
     <string name="btnGotchaText">Mám tě!</string>
     <string name="title_activity_main">MainActivity</string>
 
+
+    <string name="device_admin">Peggyho uzasna aplikacka</string>
+    <string name="device_admin_description">Truiton\'s device admin implementation which shows the usage of DevicePolicyManager class.  This implementation provides you a way to control a device\'s security.</string>
+    <string name="admin_explanation">Truiton Device Admin helps the user to get special privileges, for eg. to access the Truiton network data. These privileges can only be acquired by accepting these policies.</string>
+
 </resources>

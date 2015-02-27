@@ -1,8 +1,10 @@
 package cz.vutbr.fit.stud.xslade12.lostphone;
 
+import android.app.admin.DevicePolicyManager;
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
+import android.location.Location;
+import android.util.Log;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -20,11 +22,6 @@ import java.util.List;
 
 public class Worker {
 
-    static final int TYPE_PING      = 0x0000;
-    static final int TYPE_RING      = 0x0001;
-    static final int TYPE_LOCK      = 0x0002;
-    static final int TYPE_LOCATE    = 0x0003;
-
     static final String HTTP_ENDPOINT = "http://lostphone.dev/gate/";
 
     Context context;
@@ -34,61 +31,86 @@ public class Worker {
     }
 
     public void proccess(Request request) {
-        Response response;
+//        Response response;
         if(request.isType(Request.TYPE_RING))
             // spusti Ringin
-            response = processRing(request);
+            processRing(request);
         else if(request.isType(Request.TYPE_LOCK))
             // spusti LockScreen a nastavi PIN
-            response = processLock(request);
+            processLock(request);
         else if(request.isType(Request.TYPE_LOCATE))
             // Spusti lokaci telefonu
-            response = processLocate(request);
+            processLocate(request);
         //else if(request.isType(Request.TYPE_PING))
         else {
             // vrati response PONG nebo tak neco
-            response = processPong(request);
+            processPong(request);
         }
+    }
+
+
+    protected void processPong(Request request) {
+        Response response = request.createResponse();
 
         sendResponse(response);
     }
-
-
-    protected Response processPong(Request request) {
-        Response response = request.createResponse();
-        return response;
-    }
-    protected Response processRing(Request request) {
+    protected void processRing(Request request) {
         Response response = request.createResponse();
 
 //        Intent intent = new Intent(context, RingingActivity.class);
 //        context.startActivity(intent);
 
-
-
-        Intent dialogIntent = new Intent(context, RingingActivity.class);
-        dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        context.startActivity(dialogIntent);
-
-
-
-
-        // Todo nejdriv poslat request a pak to teprve spustit
-
-        return response;
-    }
-    protected Response processLock(Request request) {
-        Response response = request.createResponse();
-
-        Intent intent = new Intent(context, LockScreenActivity.class);
+        Intent intent = new Intent(context, RingingActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(intent);
+
         // Todo nejdriv poslat request a pak to teprve spustit
 
-        return response;
+        sendResponse(response);
     }
-    protected Response processLocate(Request request) {
+    protected void processLock(Request request) {
         Response response = request.createResponse();
-        return response;
+
+
+        DevicePolicyManager mDPM = (DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
+//        ComponentName mDPA = new ComponentName(context, MyDevicePolicyReceiver.class);
+
+        context.startService(new Intent(context, LockScreenService.class));
+
+        mDPM.resetPassword("heslo", 0);
+        mDPM.lockNow();
+
+        //
+//        KeyguardManager keyguardManager = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
+//        KeyguardManager.KeyguardLock lock = keyguardManager.newKeyguardLock(Context.KEYGUARD_SERVICE);
+//
+//        lock.reenableKeyguard();
+//        lock.disableKeyguard()
+
+//        Intent intent = new Intent(context, LockScreenActivity.class);
+//        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); // aby se dala otevrit ze service
+//        context.startActivity(intent);
+
+        // Todo nejdriv poslat request a pak to teprve spustit
+        sendResponse(response);
+    }
+    protected void processLocate(Request request) {
+        final Response response = request.createResponse();
+
+        MyLocation myLocation = new MyLocation();
+        myLocation.getLocation(context, new MyLocation.LocationResult(){
+            @Override
+            public void gotLocation(Location location){
+                if(location == null) {
+                    Log.i("GPS", " - NENALEZENO - ");
+                    return;
+                }
+                Log.i("GPS", String.valueOf(location.getLatitude() + " / " + String.valueOf(location.getLongitude())));
+
+                // TODO set Lat and Lng to response .. poslat i kdyz neprislo
+                sendResponse(response);
+            }
+        });
     }
 
 
