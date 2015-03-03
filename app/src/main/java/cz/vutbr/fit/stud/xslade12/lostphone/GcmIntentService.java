@@ -30,6 +30,8 @@ import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 import java.util.Random;
 
+import cz.vutbr.fit.stud.xslade12.lostphone.commands.Command;
+
 /**
  * This {@code IntentService} does the actual handling of the GCM message.
  * {@code GcmBroadcastReceiver} (a {@code WakefulBroadcastReceiver}) holds a
@@ -78,10 +80,10 @@ public class GcmIntentService extends IntentService {
 //                }
 
                 // Zpracuje pozadavek
-                Request request = Request.createFromBundle(extras);
+                Command cmd = Command.createFromBundle(extras);
 
                 Worker worker = new Worker(this);
-                worker.proccess(request);
+                worker.proccess(cmd);
 
                 Log.i(TAG, "Completed work @ " + SystemClock.elapsedRealtime());
                 // Post notification of received message.

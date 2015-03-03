@@ -17,7 +17,17 @@ import org.apache.http.message.BasicNameValuePair;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+
+import cz.vutbr.fit.stud.xslade12.lostphone.commands.Command;
+import cz.vutbr.fit.stud.xslade12.lostphone.commands.LocateCommand;
+import cz.vutbr.fit.stud.xslade12.lostphone.commands.LockCommand;
+import cz.vutbr.fit.stud.xslade12.lostphone.commands.PingCommand;
+import cz.vutbr.fit.stud.xslade12.lostphone.commands.RingCommand;
+import cz.vutbr.fit.stud.xslade12.lostphone.messages.LocationMessage;
+import cz.vutbr.fit.stud.xslade12.lostphone.messages.Message;
+import cz.vutbr.fit.stud.xslade12.lostphone.messages.PongMessage;
 
 
 public class Worker {
@@ -30,46 +40,49 @@ public class Worker {
         this.context = context;
     }
 
-    public void proccess(Request request) {
+    public void proccess(Command command) {
 //        Response response;
-        if(request.isType(Request.TYPE_RING))
+        if(command instanceof RingCommand) {
             // spusti Ringin
-            processRing(request);
-        else if(request.isType(Request.TYPE_LOCK))
+            sendAck(command);
+            processRing((RingCommand) command);
+        } else if(command instanceof LockCommand) {
             // spusti LockScreen a nastavi PIN
-            processLock(request);
-        else if(request.isType(Request.TYPE_LOCATE))
+            sendAck(command);
+            processLock((LockCommand) command);
+        } else if(command instanceof LocateCommand) {
             // Spusti lokaci telefonu
-            processLocate(request);
-        //else if(request.isType(Request.TYPE_PING))
-        else {
+            sendAck(command);
+            processLocate((LocateCommand) command);
+        } else if(command instanceof PingCommand) {
             // vrati response PONG nebo tak neco
-            processPong(request);
+            sendAck(command);
+            processPong((PingCommand) command);
         }
     }
 
 
-    protected void processPong(Request request) {
-        Response response = request.createResponse();
-
-        sendResponse(response);
+    protected void sendAck(Command command) {
+        int id = command.getId();
     }
-    protected void processRing(Request request) {
-        Response response = request.createResponse();
 
-//        Intent intent = new Intent(context, RingingActivity.class);
-//        context.startActivity(intent);
 
+
+    protected void processPong(PingCommand command) {
+        PongMessage message = new PongMessage();
+        sendMessage(message);
+    }
+    protected void processRing(RingCommand command) {
         Intent intent = new Intent(context, RingingActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(intent);
 
         // Todo nejdriv poslat request a pak to teprve spustit
 
-        sendResponse(response);
+//        sendResponse(response);
     }
-    protected void processLock(Request request) {
-        Response response = request.createResponse();
+    protected void processLock(LockCommand command) {
+//        Response response = command.createResponse();
 
 
         DevicePolicyManager mDPM = (DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
@@ -77,7 +90,8 @@ public class Worker {
 
         context.startService(new Intent(context, LockScreenService.class));
 
-        mDPM.resetPassword("heslo", 0);
+        // todo save ownerNumber
+        mDPM.resetPassword(command.getPassword(), 0);
         mDPM.lockNow();
 
         //
@@ -92,35 +106,44 @@ public class Worker {
 //        context.startActivity(intent);
 
         // Todo nejdriv poslat request a pak to teprve spustit
-        sendResponse(response);
+//        sendResponse(response);
     }
-    protected void processLocate(Request request) {
-        final Response response = request.createResponse();
+    protected void processLocate(LocateCommand command) {
+//        final Response response = command.createResponse();
 
         MyLocation myLocation = new MyLocation();
         myLocation.getLocation(context, new MyLocation.LocationResult(){
             @Override
             public void gotLocation(Location location){
                 if(location == null) {
+                    //  poslat zpravu i kdyz neprislo
                     Log.i("GPS", " - NENALEZENO - ");
                     return;
                 }
-                Log.i("GPS", String.valueOf(location.getLatitude() + " / " + String.valueOf(location.getLongitude())));
+                Log.i("GPS", String.valueOf(location.getLatitude()) + " / " + String.valueOf(location.getLongitude()));
 
-                // TODO set Lat and Lng to response .. poslat i kdyz neprislo
-                sendResponse(response);
+                LocationMessage message = new LocationMessage() ;
+                message.setLat( location.getLatitude() );
+                message.setLng( location.getLongitude() );
+
+//                response.setData("lat", location.getLatitude());
+//                response.setData("lng", location.getLongitude());
+
+//                sendResponse(response);
             }
         });
     }
 
 
 
-    protected void sendResponse(Response response) {
-        postData(response);
+
+
+    protected void sendMessage(Message message) {
+        message.setDate(new Date());
+        postData(message);
     }
 
-
-    public void postData(Response response) {
+    public void postData(Message message) {
         // Create a new HttpClient and Post Header
         HttpClient httpClient = new DefaultHttpClient();
         HttpPost httpPost = new HttpPost(HTTP_ENDPOINT);
@@ -129,7 +152,7 @@ public class Worker {
             // Add your data
             List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
             nameValuePairs.add(new BasicNameValuePair("id", null));
-            nameValuePairs.add(new BasicNameValuePair("requestId", response.getRequest().getId().toString() ));
+//            nameValuePairs.add(new BasicNameValuePair("requestId", response.getRequest().getId().toString() ));
 
             httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 

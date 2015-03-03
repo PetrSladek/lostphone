@@ -9,9 +9,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.hardware.Camera;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -24,7 +26,11 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+
 
 
 public class MainActivity extends Activity {
@@ -83,6 +89,8 @@ public class MainActivity extends Activity {
             if (isGCMRegistered()) {
                 System.out.println("RegID: - neni zaregistrovano -");
                 this.setTitle("- neni zeregistrovano -");
+
+                registerGCMInBackground();
             } else {
                 System.out.println("RegID: " + regid);
                 this.setTitle(regid);
@@ -92,13 +100,39 @@ public class MainActivity extends Activity {
         }
 
 
+        final FrontCameraController fc = new FrontCameraController(this);
+        if(fc.hasCamera()) {
+            fc.open();
+            fc.setPictureCallback(new Camera.PictureCallback() {
+                @Override
+                public void onPictureTaken(byte[] data, Camera camera) {
+                    File pictureFile = fc.getOutputMediaFile();
 
+                    if (pictureFile == null) {
+                        Log.d("FrontCAM", "Error creating media file, check storage permissions");
+                        return;
+                    }
 
-//        buildGoogleApiClient();
-
-
+                    try {
+                        Log.d("FrontCAM", "File created");
+                        FileOutputStream fos = new FileOutputStream(pictureFile);
+                        fos.write(data);
+                        fos.close();
+                    } catch (FileNotFoundException e) {
+                        Log.d("FrontCAM", "File not found: " + e.getMessage());
+                    } catch (IOException e) {
+                        Log.d("FrontCAM", "Error accessing file: " + e.getMessage());
+                    }
+                }
+            });
+            fc.takePicture();
+            fc.release();
+        }
 
     }
+
+
+
 
     /**
      * Check the device to make sure it has the Google Play Services APK. If
@@ -237,8 +271,7 @@ public class MainActivity extends Activity {
     private SharedPreferences getGcmPreferences(Context context) {
         // This sample app persists the registration ID in shared preferences, but
         // how you store the regID in your app is up to you.
-        return getSharedPreferences(DemoActivity.class.getSimpleName(),
-                Context.MODE_PRIVATE);
+        return getSharedPreferences(DemoActivity.class.getSimpleName(), Context.MODE_PRIVATE);
     }
     /**
      * Sends the registration ID to your server over HTTP, so it can use GCM/HTTP or CCS to send
@@ -249,6 +282,10 @@ public class MainActivity extends Activity {
         // Your implementation here.
         System.out.println("RegID: " + regid);
         this.setTitle(regid);
+
+
+        TelephonyManager telephonyManager = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
+        telephonyManager.getDeviceId();
     }
 
 
@@ -268,11 +305,11 @@ public class MainActivity extends Activity {
     }
 
     public void solveCheckBoxGCMRegistered() {
-//        if (isGCMRegistered()) {
-//            checkBoxGCMRegistered.setChecked(true);
-//        } else {
-//            checkBoxGCMRegistered.setChecked(false);
-//        }
+        if (isGCMRegistered()) {
+            checkBoxGCMRegistered.setChecked(true);
+        } else {
+            checkBoxGCMRegistered.setChecked(false);
+        }
 //
 //        registerGCMInBackground();
 //
