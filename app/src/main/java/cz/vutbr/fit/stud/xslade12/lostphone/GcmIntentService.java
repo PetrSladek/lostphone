@@ -79,12 +79,14 @@ public class GcmIntentService extends IntentService {
 //                    }
 //                }
 
-                // Zpracuje pozadavek
-                Command cmd = Command.createFromBundle(extras);
-
-                Worker worker = new Worker(this);
-                worker.proccess(cmd);
-
+                try {
+                    // Zpracuje pozadavek
+                    Command cmd = Command.createFromBundle(extras);
+                    Worker worker = new Worker(this);
+                    worker.proccess(cmd);
+                } catch (Exception ex) {
+                    Log.i(TAG, "Error:  " + ex.getLocalizedMessage());
+                }
                 Log.i(TAG, "Completed work @ " + SystemClock.elapsedRealtime());
                 // Post notification of received message.
                 sendNotification("Received: " + extras.toString());

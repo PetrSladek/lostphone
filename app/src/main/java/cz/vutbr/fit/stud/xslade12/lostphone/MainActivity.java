@@ -1,5 +1,7 @@
 package cz.vutbr.fit.stud.xslade12.lostphone;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.admin.DevicePolicyManager;
@@ -284,8 +286,20 @@ public class MainActivity extends Activity {
         this.setTitle(regid);
 
 
+        // Zjisti udaje o zarizeni jako např IMEI atp
         TelephonyManager telephonyManager = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
-        telephonyManager.getDeviceId();
+        Log.i(TAG, "DeviceID: " + telephonyManager.getDeviceId());
+
+        AccountManager manager = (AccountManager) getSystemService(ACCOUNT_SERVICE);
+        Account[] accounts = manager.getAccountsByType("com.google");
+
+        for (Account account : accounts) {
+            // TODO: Check possibleEmail against an email regex or treat
+            // account.name as an email address only for certain account.type
+            // values.
+            Log.i(TAG, account.name);
+//            possibleEmails.add(account.name);
+        }
     }
 
 
@@ -381,8 +395,7 @@ public class MainActivity extends Activity {
     }
 
     private boolean isMyDevicePolicyReceiverActive() {
-        return truitonDevicePolicyManager
-                .isAdminActive(truitonDevicePolicyAdmin);
+        return truitonDevicePolicyManager.isAdminActive(truitonDevicePolicyAdmin);
     }
 
     private boolean isGCMRegistered() {
