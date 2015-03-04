@@ -2,11 +2,15 @@ package cz.vutbr.fit.stud.xslade12.lostphone.messages;
 
 import java.io.File;
 
+import retrofit.http.Part;
+import retrofit.mime.TypedFile;
+
 public class WrongPassMessage extends Message {
 
-    public int getType() {
-        return Message.TYPE_WRONGPASS;
+    public WrongPassMessage() {
+        this.type = Message.TYPE_WRONGPASS;
     }
+
 
     private String password;
 

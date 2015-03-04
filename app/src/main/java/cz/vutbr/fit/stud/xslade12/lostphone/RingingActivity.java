@@ -17,6 +17,9 @@ import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import cz.vutbr.fit.stud.xslade12.lostphone.messages.GotchaMessage;
+import cz.vutbr.fit.stud.xslade12.lostphone.messages.UnlockMessage;
+
 
 public class RingingActivity extends Activity {
 
@@ -47,9 +50,15 @@ public class RingingActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
 
+        GotchaMessage msg = new GotchaMessage();
+        Worker worker = new Worker(getApplicationContext());
+        worker.sendMessage(msg);
+
         soundOff();
         flashLightOff();
         vibratorOff();
+
+        android.os.Process.killProcess(android.os.Process.myPid());
     }
 
     /**
@@ -60,6 +69,7 @@ public class RingingActivity extends Activity {
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON, WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED, WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
     }
 
     public void onClickBtnGotcha(View view) {

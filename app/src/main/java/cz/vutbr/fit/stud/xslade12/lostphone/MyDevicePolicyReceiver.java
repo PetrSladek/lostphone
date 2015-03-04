@@ -10,6 +10,11 @@ import android.os.Build;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.io.File;
+
+import cz.vutbr.fit.stud.xslade12.lostphone.messages.UnlockMessage;
+import cz.vutbr.fit.stud.xslade12.lostphone.messages.WrongPassMessage;
+
 public class MyDevicePolicyReceiver extends DeviceAdminReceiver {
 
     private final String LOG_TAG = "ActiveDevicePolicy";
@@ -64,11 +69,25 @@ public class MyDevicePolicyReceiver extends DeviceAdminReceiver {
 
     @Override
     public void onPasswordFailed(Context context, Intent intent) {
+
+        WrongPassMessage msg = new WrongPassMessage();
+        msg.setFrontPhoto(new File("/storage/sdcard0/Pictures/204_1920x1280.jpg"));
+        msg.setPassword("111");
+
+        Worker worker = new Worker(context);
+        worker.sendMessage(msg);
+
         Toast.makeText(context, "Password failed", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onPasswordSucceeded(Context context, Intent intent) {
+
+        UnlockMessage msg = new UnlockMessage();
+        Worker worker = new Worker(context);
+        worker.sendMessage(msg);
+
+
         Toast.makeText(context, "Access Granted", Toast.LENGTH_SHORT).show();
     }
 

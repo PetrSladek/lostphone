@@ -11,10 +11,13 @@ public abstract class Message {
     static final int TYPE_WRONGPASS         = 0x0004;
     static final int TYPE_LOCATION          = 0x0005;
 
-    public abstract int getType();
+    protected int type;
 
+    protected Date date;
 
-    private Date date;
+    public int getType() {
+        return type;
+    }
 
     public Date getDate() {
         return date;

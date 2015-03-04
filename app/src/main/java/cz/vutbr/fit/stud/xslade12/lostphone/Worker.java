@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.location.Location;
 import android.util.Log;
 
+import com.google.gson.Gson;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
@@ -16,9 +18,11 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import cz.vutbr.fit.stud.xslade12.lostphone.commands.Command;
 import cz.vutbr.fit.stud.xslade12.lostphone.commands.LocateCommand;
@@ -28,12 +32,28 @@ import cz.vutbr.fit.stud.xslade12.lostphone.commands.RingCommand;
 import cz.vutbr.fit.stud.xslade12.lostphone.messages.LocationMessage;
 import cz.vutbr.fit.stud.xslade12.lostphone.messages.Message;
 import cz.vutbr.fit.stud.xslade12.lostphone.messages.PongMessage;
+import cz.vutbr.fit.stud.xslade12.lostphone.messages.UnlockMessage;
+import cz.vutbr.fit.stud.xslade12.lostphone.messages.WrongPassMessage;
+import retrofit.Callback;
+import retrofit.RestAdapter;
+import retrofit.RetrofitError;
+import retrofit.android.AndroidLog;
+import retrofit.client.Response;
+import retrofit.converter.ConversionException;
+import retrofit.converter.Converter;
+import retrofit.converter.GsonConverter;
+import retrofit.mime.MultipartTypedOutput;
+import retrofit.mime.TypedFile;
+import retrofit.mime.TypedInput;
+import retrofit.mime.TypedOutput;
+import retrofit.mime.TypedString;
 
 
 public class Worker {
 
-    static final String HTTP_ENDPOINT = "http://lostphone.dev/gate/";
+//    static final String HTTP_ENDPOINT = "http://lostphone.dev/gate/";
 
+    static final String TAG = "LostPhone-Worker";
     Context context;
 
     public Worker(Context context) {
@@ -64,13 +84,25 @@ public class Worker {
 
     protected void sendAck(Command command) {
         int id = command.getId();
+
+        getRestService().ackCommand(id, new Date(), new Callback<String>() {
+            @Override
+            public void success(String s, Response response) {
+
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+
+            }
+        });
     }
 
 
 
     protected void processPong(PingCommand command) {
-        PongMessage message = new PongMessage();
-        sendMessage(message);
+        PongMessage msg = new PongMessage();
+        sendMessage(msg);
     }
     protected void processRing(RingCommand command) {
         Intent intent = new Intent(context, RingingActivity.class);
@@ -122,27 +154,66 @@ public class Worker {
                 }
                 Log.i("GPS", String.valueOf(location.getLatitude()) + " / " + String.valueOf(location.getLongitude()));
 
-                LocationMessage message = new LocationMessage() ;
-                message.setLat( location.getLatitude() );
-                message.setLng( location.getLongitude() );
+                LocationMessage msg = new LocationMessage() ;
+                msg.setLat( location.getLatitude() );
+                msg.setLng( location.getLongitude() );
 
-//                response.setData("lat", location.getLatitude());
-//                response.setData("lng", location.getLongitude());
+                sendMessage(msg);
 
-//                sendResponse(response);
             }
         });
     }
 
 
 
+    private static ApiServiceInterface restService;
+    protected ApiServiceInterface getRestService() {
+        if(restService != null)
+            return restService;
+
+        RestAdapter restAdapter = new RestAdapter.Builder()
+                .setEndpoint(ApiServiceInterface.ENDPOINT)
+                .setLogLevel(RestAdapter.LogLevel.FULL)
+                .setLog(new AndroidLog(TAG))
+                .build();
+
+        restService = restAdapter.create(ApiServiceInterface.class);
+        return restService;
+    }
+
 
 
     protected void sendMessage(Message message) {
         message.setDate(new Date());
-        postData(message);
-    }
+//        postData(message);
 
+        Callback<String> callback = new Callback<String>() {
+            @Override
+            public void success(String message, Response response) {
+                Log.i(TAG, message);
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+                Log.i(TAG, "Error:  " + error.getMessage());
+            }
+        };
+
+        if(message instanceof WrongPassMessage) {
+            getRestService().createWrongPassMessage(
+                    new TypedString(String.valueOf(message.getType())),
+                    new TypedString(message.getDate().toString()),
+                    new TypedFile("image/jpeg", ((WrongPassMessage) message).getFrontPhoto()),
+                    callback
+                    );
+        } else {
+            getRestService().createMessage(message, callback);
+        }
+
+
+
+    }
+/*
     public void postData(Message message) {
         // Create a new HttpClient and Post Header
         HttpClient httpClient = new DefaultHttpClient();
@@ -165,6 +236,6 @@ public class Worker {
             // TODO Auto-generated catch block
         }
     }
-
+*/
 
 }
