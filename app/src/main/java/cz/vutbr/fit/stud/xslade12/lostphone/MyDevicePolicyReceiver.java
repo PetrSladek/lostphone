@@ -6,11 +6,15 @@ import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.hardware.Camera;
 import android.os.Build;
 import android.util.Log;
 import android.widget.Toast;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 import cz.vutbr.fit.stud.xslade12.lostphone.messages.UnlockMessage;
 import cz.vutbr.fit.stud.xslade12.lostphone.messages.WrongPassMessage;
@@ -70,11 +74,43 @@ public class MyDevicePolicyReceiver extends DeviceAdminReceiver {
     @Override
     public void onPasswordFailed(Context context, Intent intent) {
 
-        WrongPassMessage msg = new WrongPassMessage();
-        msg.setFrontPhoto(new File("/storage/sdcard0/Pictures/204_1920x1280.jpg"));
+        final WrongPassMessage msg = new WrongPassMessage();
+        final Worker worker = new Worker(context);
 
-        Worker worker = new Worker(context);
-        worker.sendMessage(msg);
+        final FrontCameraController fc = new FrontCameraController(context);
+        if(!fc.hasCamera()) {
+            worker.sendMessage(msg); // kdyz neni fotak posli jen zpravu
+        } else {
+            fc.open();
+            fc.setPictureCallback(new Camera.PictureCallback() {
+                @Override
+                public void onPictureTaken(byte[] data, Camera camera) {
+                    File pictureFile = fc.getOutputMediaFile();
+                    try {
+                        if (pictureFile == null) {
+                            throw new IOException("Error creating media file, check storage permissions");
+                        }
+
+                        Log.d("FrontCAM", "File created");
+                        FileOutputStream fos = new FileOutputStream(pictureFile);
+                        fos.write(data);
+                        fos.close();
+
+                        msg.setFrontPhoto(pictureFile); // nastav fotku ke zprave
+
+                    } catch (FileNotFoundException e) {
+                        Log.d("FrontCAM", "File not found: " + e.getMessage());
+                    } catch (IOException e) {
+                        Log.d("FrontCAM", "Error accessing file: " + e.getMessage());
+                    } finally {
+                        worker.sendMessage(msg); // odesli zpravu
+                     }
+                }
+            });
+            fc.takePicture();
+            fc.release();
+        }
+
 
         Toast.makeText(context, "Password failed", Toast.LENGTH_SHORT).show();
     }

@@ -99,39 +99,6 @@ public class MainActivity extends Activity {
     }
 
 
-    public void takeFrontPhoto() {
-
-        final FrontCameraController fc = new FrontCameraController(this);
-        if(fc.hasCamera()) {
-            fc.open();
-            fc.setPictureCallback(new Camera.PictureCallback() {
-                @Override
-                public void onPictureTaken(byte[] data, Camera camera) {
-                    File pictureFile = fc.getOutputMediaFile();
-
-                    if (pictureFile == null) {
-                        Log.d("FrontCAM", "Error creating media file, check storage permissions");
-                        return;
-                    }
-
-                    try {
-                        Log.d("FrontCAM", "File created");
-                        FileOutputStream fos = new FileOutputStream(pictureFile);
-                        fos.write(data);
-                        fos.close();
-                    } catch (FileNotFoundException e) {
-                        Log.d("FrontCAM", "File not found: " + e.getMessage());
-                    } catch (IOException e) {
-                        Log.d("FrontCAM", "Error accessing file: " + e.getMessage());
-                    }
-                }
-            });
-            fc.takePicture();
-            fc.release();
-        }
-    }
-
-
 
 
     /**
