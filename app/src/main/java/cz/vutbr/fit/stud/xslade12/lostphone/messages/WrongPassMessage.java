@@ -11,18 +11,18 @@ public class WrongPassMessage extends Message {
         this.type = Message.TYPE_WRONGPASS;
     }
 
-
-    private String password;
+//
+//    private String password;
 
     private File frontPhoto;
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
+//    public String getPassword() {
+//        return password;
+//    }
+//
+//    public void setPassword(String password) {
+//        this.password = password;
+//    }
 
     public File getFrontPhoto() {
         return frontPhoto;

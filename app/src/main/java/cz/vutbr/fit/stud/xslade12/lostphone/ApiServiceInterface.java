@@ -6,6 +6,7 @@ import cz.vutbr.fit.stud.xslade12.lostphone.messages.Message;
 import retrofit.Callback;
 import retrofit.http.Body;
 import retrofit.http.Field;
+import retrofit.http.FormUrlEncoded;
 import retrofit.http.Multipart;
 import retrofit.http.POST;
 import retrofit.http.Part;
@@ -30,6 +31,7 @@ public interface ApiServiceInterface {
     void createWrongPassMessage(@Part("type") TypedString type, @Part("date") TypedString date, @Part("frontPhoto") TypedFile frontPhoto, Callback<String> cb);
 
 
+    @FormUrlEncoded
     @POST("/ack/{id}")
     void ackCommand(@Path("id") int id, @Field("date") Date date, Callback<String> cb);
 }

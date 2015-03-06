@@ -72,7 +72,6 @@ public class MyDevicePolicyReceiver extends DeviceAdminReceiver {
 
         WrongPassMessage msg = new WrongPassMessage();
         msg.setFrontPhoto(new File("/storage/sdcard0/Pictures/204_1920x1280.jpg"));
-        msg.setPassword("111");
 
         Worker worker = new Worker(context);
         worker.sendMessage(msg);

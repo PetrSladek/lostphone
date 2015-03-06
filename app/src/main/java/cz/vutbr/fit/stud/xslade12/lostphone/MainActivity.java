@@ -15,6 +15,7 @@ import android.hardware.Camera;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.Menu;
@@ -33,22 +34,17 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import cz.vutbr.fit.stud.xslade12.lostphone.messages.RegistrationMessage;
 
 
 public class MainActivity extends Activity {
 
-    private DevicePolicyManager activeDevicePolicyManager;
-    private final String LOG_TAG = "ActiveDevicePolicy";
-
-    DevicePolicyManager truitonDevicePolicyManager;
-    ComponentName truitonDevicePolicyAdmin;
+    DevicePolicyManager devicePolicyManager;
+    ComponentName devicePolicyAdmin;
     private CheckBox checkBoxDevicePolicyEnabled;
     private CheckBox checkBoxGCMRegistered;
 
     protected static final int REQUEST_ENABLE = 1;
-    protected static final int SET_PASSWORD = 2;
-
-
 
     GoogleCloudMessaging gcm;
     String regid;
@@ -77,8 +73,8 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        truitonDevicePolicyManager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
-        truitonDevicePolicyAdmin = new ComponentName(this, MyDevicePolicyReceiver.class);
+        devicePolicyManager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
+        devicePolicyAdmin = new ComponentName(this, MyDevicePolicyReceiver.class);
 
         checkBoxDevicePolicyEnabled = (CheckBox) findViewById(R.id.checkBoxDevicePolicyEnabled);
         checkBoxGCMRegistered = (CheckBox) findViewById(R.id.checkBoxGCMRegistered);
@@ -86,12 +82,11 @@ public class MainActivity extends Activity {
         // Check device for Play Services APK. If check succeeds, proceed with GCM registration.
         if (checkPlayServices()) {
             gcm = GoogleCloudMessaging.getInstance(this);
-            regid = getRegistrationId(this.getApplicationContext());
+            regid = getRegistrationId(this.getApplicationContext()); // vytahne regid z uloziste
 
-            if (isGCMRegistered()) {
+            if (isGCMRegistered()) { // kdyz  neni zaregistrovano tak zaregistrujeme
                 System.out.println("RegID: - neni zaregistrovano -");
                 this.setTitle("- neni zeregistrovano -");
-
                 registerGCMInBackground();
             } else {
                 System.out.println("RegID: " + regid);
@@ -101,6 +96,10 @@ public class MainActivity extends Activity {
             Log.i(TAG, "No valid Google Play Services APK found.");
         }
 
+    }
+
+
+    public void takeFrontPhoto() {
 
         final FrontCameraController fc = new FrontCameraController(this);
         if(fc.hasCamera()) {
@@ -130,7 +129,6 @@ public class MainActivity extends Activity {
             fc.takePicture();
             fc.release();
         }
-
     }
 
 
@@ -215,10 +213,8 @@ public class MainActivity extends Activity {
                         gcm = GoogleCloudMessaging.getInstance(MainActivity.this);
                     }
 
-
                     regid = gcm.register(SENDER_ID);
 
-                    msg = "Device registered, registration ID=" + regid;
                     // You should send the registration ID to your server over HTTP, so it
                     // can use GCM/HTTP or CCS to send messages to your app.
                     sendRegistrationIdToBackend();
@@ -230,16 +226,10 @@ public class MainActivity extends Activity {
                     // Persist the regID - no need to register again.
                     storeRegistrationId(MainActivity.this.getApplicationContext(), regid);
                 } catch (IOException ex) {
-                    msg = "Error :" + ex.getMessage();
+                    Log.i(TAG, "Error :" + ex.getMessage());
                     // If there is an error, don't just keep trying to register.
                     // Require the user to click a button again, or perform
                     // exponential back-off.
-
-//                    try {
-//                        gcm.unregister();
-//                    } catch (IOException exx) {
-//                        msg = "Error :" + exx.getMessage();
-//                    }
                 }
 
                 return msg;
@@ -247,8 +237,6 @@ public class MainActivity extends Activity {
 
             @Override
             protected void onPostExecute(String msg) {
-//                mDisplay.append(msg + "\n");
-//                    solveCheckBoxGCMRegistered();
             }
         }.execute(null, null, null);
     }
@@ -258,12 +246,10 @@ public class MainActivity extends Activity {
      */
     private static int getAppVersion(Context context) {
         try {
-            PackageInfo packageInfo = context.getPackageManager()
-                    .getPackageInfo(context.getPackageName(), 0);
+            PackageInfo packageInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
             return packageInfo.versionCode;
         } catch (PackageManager.NameNotFoundException e) {
-            // should never happen
-            throw new RuntimeException("Could not get package name: " + e);
+            throw new RuntimeException("Could not get package name: " + e); // should never happen
         }
     }
 
@@ -281,25 +267,34 @@ public class MainActivity extends Activity {
      * to a server that echoes back the message using the 'from' address in the message.
      */
     private void sendRegistrationIdToBackend() {
-        // Your implementation here.
+
         System.out.println("RegID: " + regid);
         this.setTitle(regid);
 
 
-        // Zjisti udaje o zarizeni jako např IMEI atp
-        TelephonyManager telephonyManager = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
-        Log.i(TAG, "DeviceID: " + telephonyManager.getDeviceId());
-
         AccountManager manager = (AccountManager) getSystemService(ACCOUNT_SERVICE);
         Account[] accounts = manager.getAccountsByType("com.google");
 
-        for (Account account : accounts) {
-            // TODO: Check possibleEmail against an email regex or treat
-            // account.name as an email address only for certain account.type
-            // values.
-            Log.i(TAG, account.name);
-//            possibleEmails.add(account.name);
-        }
+
+        // Zjisti udaje o zarizeni jako např IMEI atp
+        TelephonyManager tm = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
+        String identifier = null;
+        if (tm != null)
+            identifier = tm.getDeviceId();
+        if (identifier == null || identifier .length() == 0)
+            identifier = Settings.Secure.getString(this.getContentResolver(), Settings.Secure.ANDROID_ID);
+
+        RegistrationMessage msg = new RegistrationMessage();
+
+        msg.setGcmId( regid );
+        msg.setIdentifier(identifier);
+        msg.setBrand(Build.BRAND);
+        msg.setModel(Build.MODEL);
+        msg.setGoogleAccountEmail( accounts[0].name );
+
+        Worker worker = new Worker(this);
+        worker.sendMessage(msg);
+
     }
 
 
@@ -354,11 +349,11 @@ public class MainActivity extends Activity {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
                     Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
-                    intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, truitonDevicePolicyAdmin);
+                    intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, devicePolicyAdmin);
                     intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, getString(R.string.admin_explanation));
                     startActivityForResult(intent, REQUEST_ENABLE);
                 } else {
-                    truitonDevicePolicyManager.removeActiveAdmin(truitonDevicePolicyAdmin);
+                    devicePolicyManager.removeActiveAdmin(devicePolicyAdmin);
                 }
             }
         });
@@ -375,19 +370,19 @@ public class MainActivity extends Activity {
         if (resultCode == RESULT_OK) {
             switch (requestCode) {
                 case REQUEST_ENABLE:
-                    Log.v(LOG_TAG, "Enabling Policies Now");
+                    Log.v(TAG, "Enabling Policies Now");
 
-//                    truitonDevicePolicyManager.setMaximumTimeToLock(truitonDevicePolicyAdmin, 30000L);
-//                    truitonDevicePolicyManager.setMaximumFailedPasswordsForWipe(truitonDevicePolicyAdmin, 5);
-//                    truitonDevicePolicyManager.setPasswordQuality(truitonDevicePolicyAdmin, DevicePolicyManager.PASSWORD_QUALITY_COMPLEX);
-//                    truitonDevicePolicyManager.setCameraDisabled(truitonDevicePolicyAdmin, true);
-//                    boolean isSufficient = truitonDevicePolicyManager.isActivePasswordSufficient();
+//                    devicePolicyManager.setMaximumTimeToLock(devicePolicyAdmin, 30000L);
+//                    devicePolicyManager.setMaximumFailedPasswordsForWipe(devicePolicyAdmin, 5);
+//                    devicePolicyManager.setPasswordQuality(devicePolicyAdmin, DevicePolicyManager.PASSWORD_QUALITY_COMPLEX);
+//                    devicePolicyManager.setCameraDisabled(devicePolicyAdmin, true);
+//                    boolean isSufficient = devicePolicyManager.isActivePasswordSufficient();
 //                    if (isSufficient) {
-//                        truitonDevicePolicyManager.lockNow();
+//                        devicePolicyManager.lockNow();
 //                    } else {
 ////                        Intent setPasswordIntent = new Intent(DevicePolicyManager.ACTION_SET_NEW_PASSWORD);
 ////                        startActivityForResult(setPasswordIntent, SET_PASSWORD);
-////                        truitonDevicePolicyManager.setPasswordExpirationTimeout(truitonDevicePolicyAdmin, 10000L);
+////                        devicePolicyManager.setPasswordExpirationTimeout(devicePolicyAdmin, 10000L);
 //                    }
                     break;
             }
@@ -395,7 +390,7 @@ public class MainActivity extends Activity {
     }
 
     private boolean isMyDevicePolicyReceiverActive() {
-        return truitonDevicePolicyManager.isAdminActive(truitonDevicePolicyAdmin);
+        return devicePolicyManager.isAdminActive(devicePolicyAdmin);
     }
 
     private boolean isGCMRegistered() {
