@@ -1,8 +1,11 @@
 package cz.vutbr.fit.stud.xslade12.lostphone;
 
+import android.app.AlertDialog;
 import android.app.admin.DevicePolicyManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.util.Log;
 
@@ -55,9 +58,15 @@ public class Worker {
 
     static final String TAG = "LostPhone-Worker";
     Context context;
+    SharedPreferences preferences;
 
     public Worker(Context context) {
         this.context = context;
+        this.preferences = context.getSharedPreferences(MainActivity.class.getSimpleName(), Context.MODE_PRIVATE);
+    }
+
+    public SharedPreferences getPreferences() {
+        return preferences;
     }
 
     public void proccess(Command command) {
@@ -116,15 +125,26 @@ public class Worker {
     protected void processLock(LockCommand command) {
 //        Response response = command.createResponse();
 
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putBoolean("locked", true);
+        editor.commit();
 
         DevicePolicyManager mDPM = (DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
 //        ComponentName mDPA = new ComponentName(context, MyDevicePolicyReceiver.class);
 
         context.startService(new Intent(context, LockScreenService.class));
 
+
+//        Intent intent = new Intent(context, LockScreenActivity.class);
+//        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); // aby se dala otevrit ze service
+//        context.startActivity(intent);
+
         // todo save ownerNumber
         mDPM.resetPassword(command.getPassword(), 0);
         mDPM.lockNow();
+//        mDPM.resetPassword("", 0);
+
+//        context.startService(new Intent(context, OverlayService.class));
 
         //
 //        KeyguardManager keyguardManager = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
@@ -133,9 +153,9 @@ public class Worker {
 //        lock.reenableKeyguard();
 //        lock.disableKeyguard()
 
-//        Intent intent = new Intent(context, LockScreenActivity.class);
-//        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); // aby se dala otevrit ze service
-//        context.startActivity(intent);
+        Intent intent = new Intent(context, LockScreenActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); // aby se dala otevrit ze service
+        context.startActivity(intent);
 
         // Todo nejdriv poslat request a pak to teprve spustit
 //        sendResponse(response);

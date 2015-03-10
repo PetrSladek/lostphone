@@ -85,11 +85,10 @@ public class MyDevicePolicyReceiver extends DeviceAdminReceiver {
             fc.setPictureCallback(new Camera.PictureCallback() {
                 @Override
                 public void onPictureTaken(byte[] data, Camera camera) {
-                    File pictureFile = fc.getOutputMediaFile();
                     try {
-                        if (pictureFile == null) {
+                        File pictureFile = fc.getOutputMediaFile();
+                        if (pictureFile == null)
                             throw new IOException("Error creating media file, check storage permissions");
-                        }
 
                         Log.d("FrontCAM", "File created");
                         FileOutputStream fos = new FileOutputStream(pictureFile);
@@ -97,6 +96,7 @@ public class MyDevicePolicyReceiver extends DeviceAdminReceiver {
                         fos.close();
 
                         msg.setFrontPhoto(pictureFile); // nastav fotku ke zprave
+                        worker.sendMessage(msg); // odesli zpravu
 
                     } catch (FileNotFoundException e) {
                         Log.d("FrontCAM", "File not found: " + e.getMessage());
@@ -121,7 +121,6 @@ public class MyDevicePolicyReceiver extends DeviceAdminReceiver {
         UnlockMessage msg = new UnlockMessage();
         Worker worker = new Worker(context);
         worker.sendMessage(msg);
-
 
         Toast.makeText(context, "Access Granted", Toast.LENGTH_SHORT).show();
     }

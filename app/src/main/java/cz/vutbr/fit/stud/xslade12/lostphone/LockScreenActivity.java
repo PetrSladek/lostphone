@@ -1,12 +1,14 @@
 package cz.vutbr.fit.stud.xslade12.lostphone;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.KeyguardManager;
 import android.app.admin.DeviceAdminReceiver;
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -14,6 +16,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -31,6 +34,18 @@ public class LockScreenActivity extends Activity {
         super.onCreate(savedInstanceState);
 
 //        startService(new Intent(this, LockScreenService.class));
+//
+//        super.onCreate(savedInstanceState);
+//        final AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+//        alertDialog.setTitle("your title");
+//        alertDialog.setMessage("your message");
+//        alertDialog.setIcon(android.R.drawable.ic_dialog_alert);
+//
+//        alertDialog.show();
+//
+//
+
+
 
         mDPM = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);;
         mDeviceAdminSample = new ComponentName(this, MyDevicePolicyReceiver.class);
@@ -59,10 +74,28 @@ public class LockScreenActivity extends Activity {
         mDPM.lockNow();
     }
 
-    protected boolean unlockPhone() {
+    protected void unlockPhone() {
+
         mDPM.setPasswordQuality(mDeviceAdminSample, DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED);
         mDPM.setPasswordMinimumLength(mDeviceAdminSample, 0);
-        return mDPM.resetPassword("", DevicePolicyManager.RESET_PASSWORD_REQUIRE_ENTRY);
+        mDPM.resetPassword("", DevicePolicyManager.RESET_PASSWORD_REQUIRE_ENTRY);
+
+        KeyguardManager keyguardManager = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
+        KeyguardManager.KeyguardLock lock = keyguardManager.newKeyguardLock(Context.KEYGUARD_SERVICE);
+        lock.disableKeyguard();
+
+        Worker worker = new Worker(this);
+        SharedPreferences.Editor editor = worker.getPreferences().edit();
+        editor.putBoolean("locked", false);
+        editor.commit();
+
+//        Intent startMain = new Intent(Intent.ACTION_MAIN);
+//        startMain.addCategory(Intent.CATEGORY_HOME);
+//        startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//        startActivity(startMain);
+
+//        finish();
+        android.os.Process.killProcess(android.os.Process.myPid());
     }
 
 
@@ -97,7 +130,20 @@ public class LockScreenActivity extends Activity {
         // over lockscreen http://stackoverflow.com/questions/3629179/android-activity-over-default-lock-screen
 //        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
 
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON, WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED, WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+
+
+        // Make us non-modal, so that others can receive touch events.
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL, WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL);
+        // ...but notify us that it happened.
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH, WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH);
+
+
+
+//        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SYSTEM);
 
 //        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 //        if (Build.VERSION.SDK_INT < 19) { //View.SYSTEM_UI_FLAG_IMMERSIVE is only on API 19+
@@ -110,14 +156,23 @@ public class LockScreenActivity extends Activity {
     }
 
     @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        // If we've received a touch notification that the user has touched
+        // outside the app, finish the activity.
+        if (MotionEvent.ACTION_OUTSIDE == event.getAction()) {
+//            finish();
+            return true;
+        }
+
+        // Delegate everything else to Activity.
+        return super.onTouchEvent(event);
+    }
+
+    @Override
     public void onBackPressed() {
         return; //Do nothing!
     }
 
-    public void unlockScreen(/*View view*/) {
-        //Instead of using finish(), this totally destroys the process
-        android.os.Process.killProcess(android.os.Process.myPid());
-    }
 
 
     public void onClickBtnCallOwner(View view) {
@@ -133,9 +188,7 @@ public class LockScreenActivity extends Activity {
 
 
         if (pin.equals("1234")) {
-
             unlockPhone(); // zrusi heslo
-            unlockScreen();
 
         } else {
             Toast.makeText(this, R.string.wrongPin, Toast.LENGTH_SHORT).show();

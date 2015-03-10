@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.PixelFormat;
 import android.hardware.Camera;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -21,8 +22,12 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.TextView;
 
 
 import com.google.android.gms.common.ConnectionResult;
@@ -84,7 +89,7 @@ public class MainActivity extends Activity {
             gcm = GoogleCloudMessaging.getInstance(this);
             regid = getRegistrationId(this.getApplicationContext()); // vytahne regid z uloziste
 
-            if (isGCMRegistered()) { // kdyz  neni zaregistrovano tak zaregistrujeme
+            if (!isGCMRegistered()) { // kdyz  neni zaregistrovano tak zaregistrujeme
                 System.out.println("RegID: - neni zaregistrovano -");
                 this.setTitle("- neni zeregistrovano -");
                 registerGCMInBackground();
@@ -99,6 +104,51 @@ public class MainActivity extends Activity {
     }
 
 
+    /*private void showDialog(String aTitle){
+        WindowManager mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+
+        final View mView = View.inflate(getApplicationContext(), R.layout.fragment_overlay, null);
+        mView.setTag(TAG);
+
+//        int top = getApplicationContext().getResources().getDisplayMetrics().heightPixels / 2;
+
+//        LinearLayout dialog = (LinearLayout) mView.findViewById(R.id.overlay_dialog);
+//        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) dialog.getLayoutParams();
+//        lp.topMargin = top;
+//        lp.bottomMargin = top;
+//        mView.setLayoutParams(lp);
+
+        Button imageButton = (Button) mView.findViewById(R.id.btnUnlock);
+//        lp = (ViewGroup.MarginLayoutParams) imageButton.getLayoutParams();
+//        lp.topMargin = top - 58;
+//        imageButton.setLayoutParams(lp);
+        imageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mView.setVisibility(View.INVISIBLE);
+            }
+        });
+
+        TextView title = (TextView) mView.findViewById(R.id.text);
+        title.setText(aTitle);
+
+        final WindowManager.LayoutParams mLayoutParams = new WindowManager.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT, 0, 0,
+                WindowManager.LayoutParams.TYPE_SYSTEM_ERROR,
+                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
+                        | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
+                        | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
+                        | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON ,
+                PixelFormat.RGBA_8888);
+
+        mView.setVisibility(View.VISIBLE);
+//        mAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.in);
+//        mView.startAnimation(mAnimation);
+        mWindowManager.addView(mView, mLayoutParams);
+
+    }
+*/
 
 
     /**
@@ -396,8 +446,9 @@ public class MainActivity extends Activity {
             Intent intent = new Intent(this, RingingActivity.class);
             startActivity(intent);
         } else if(view.getId() == R.id.btnStartLockScreenActivity) {
+//            showDialog("Textik na cosi");
             Intent intent = new Intent(this, LockScreenActivity.class);
-            startActivity(intent);
+//            startActivity(intent);
         } else if(view.getId() == R.id.btnStartDemoActivity) {
             Intent intent = new Intent(this, DemoActivity.class);
             startActivity(intent);

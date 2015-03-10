@@ -32,9 +32,6 @@ public class LockScreenService extends Service {
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_SCREEN_ON);
         filter.addAction(Intent.ACTION_SCREEN_OFF);
-        filter.addAction(Intent.ACTION_DREAMING_STARTED);
-        filter.addAction(Intent.ACTION_DREAMING_STOPPED);
-
         filter.addAction(Intent.ACTION_BOOT_COMPLETED);
 
         //Set up a receiver to listen for the Intents in this Service

@@ -45,16 +45,19 @@
             </intent-filter>
         </activity>
 
-
+        <!--android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"-->
+        <!--android:theme="@android:style/Theme.Translucent.NoTitleBar"-->
         <activity
             android:name=".LockScreenActivity"
             android:label="@string/app_name"
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
             android:showOnLockScreen="true"
+            android:launchMode="singleTop"
             >
         </activity>
 
         <service android:name=".LockScreenService" />
+        <service android:name=".OverlayService" />
 
         <receiver
             android:name=".LockScreenReceiver"
@@ -63,9 +66,6 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.ACTION_SCREEN_ON" />
                 <action android:name="android.intent.action.ACTION_SCREEN_OFF" />
-                <action android:name="android.intent.action.ACTION_DREAMING_STARTED" />
-                <action android:name="android.intent.action.ACTION_DREAMING_STOPPED" />
-
             </intent-filter>
         </receiver>
 
