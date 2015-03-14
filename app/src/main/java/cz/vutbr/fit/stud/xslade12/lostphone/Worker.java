@@ -1,7 +1,7 @@
 package cz.vutbr.fit.stud.xslade12.lostphone;
 
-import android.annotation.TargetApi;
 import android.app.admin.DevicePolicyManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -11,7 +11,6 @@ import android.location.Location;
 import android.net.Uri;
 import android.provider.CallLog;
 import android.provider.Telephony;
-import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -20,10 +19,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
-import java.util.Locale;
-import java.util.Random;
 
 import cz.vutbr.fit.stud.xslade12.lostphone.commands.Command;
+import cz.vutbr.fit.stud.xslade12.lostphone.commands.EncryptStorageCommand;
 import cz.vutbr.fit.stud.xslade12.lostphone.commands.GetLogCommand;
 import cz.vutbr.fit.stud.xslade12.lostphone.commands.LocateCommand;
 import cz.vutbr.fit.stud.xslade12.lostphone.commands.LockCommand;
@@ -45,10 +43,11 @@ import retrofit.mime.TypedString;
 
 public class Worker {
 
-    static final String TAG = "LostPhone-Worker";
-    Context context;
-    String gcmId;
-    SharedPreferences preferences;
+    public static final String TAG = "LostPhone-Worker";
+    protected Context context;
+    protected String gcmId;
+    protected SharedPreferences preferences;
+    private static ApiServiceInterface restService;
 
     private static final String PROPERTY_PHONENUMBER = "phoneNumber";
 
@@ -65,7 +64,11 @@ public class Worker {
 
     public void proccess(Command command) {
 //        Response response;
-        if(command instanceof RingCommand) {
+        if(command instanceof PingCommand) {
+            // vrati response PONG nebo tak neco
+            sendAck(command);
+            processPong((PingCommand) command);
+        } else if(command instanceof RingCommand) {
             // spusti Ringin
             sendAck(command);
             processRing((RingCommand) command);
@@ -81,10 +84,14 @@ public class Worker {
             // Spusti lokaci telefonu
             sendAck(command);
             processGetLog((GetLogCommand) command);
-        } else if(command instanceof PingCommand) {
-            // vrati response PONG nebo tak neco
+        } else if(command instanceof EncryptStorageCommand) {
+            // Spusti zasifrovani dat
             sendAck(command);
-            processPong((PingCommand) command);
+            processEncryptStorage((EncryptStorageCommand) command);
+        } else if(command instanceof WipeDataCommand) {
+            // Spusti smazani dat a uvedeni do tovarniho nastaveni
+            sendAck(command);
+            processWipeData((WipeDataCommand) command);
         }
     }
 
@@ -103,8 +110,6 @@ public class Worker {
             }
         });
     }
-
-
 
     protected void processPong(PingCommand command) {
         PongMessage msg = new PongMessage();
@@ -131,9 +136,16 @@ public class Worker {
         msg.setSmsLog(getSmsLog()); // vypis sms
         sendMessage(msg);
     }
+    protected void processEncryptStorage(EncryptStorageCommand command) {
+        storageEncrypt();
+    }
+    protected void processWipeData(WipeDataCommand command) {
+        wipeData();
+    }
 
 
-    private static ApiServiceInterface restService;
+
+
     protected ApiServiceInterface getRestService() {
         if(restService != null)
             return restService;
@@ -147,8 +159,6 @@ public class Worker {
         restService = restAdapter.create(ApiServiceInterface.class);
         return restService;
     }
-
-
 
     protected void sendMessage(Message message) {
         message.setDate(new Date());
@@ -361,16 +371,8 @@ public class Worker {
         // posle intent na ukonceni LockActivity
     }
 
-
-//    TextToSpeech textToSpeech;
     public void startStolenMode(String password) {
         startLockMode(password, null, null, true);
-
-
-        // Spusti rinceni stolen
-
-
-
 //        String toSpeak = "This phone has been stolen";
 //
 //        textToSpeech = new TextToSpeech( context, new TextToSpeech.OnInitListener() {
@@ -384,7 +386,6 @@ public class Worker {
 //        textToSpeech.setLanguage(Locale.getDefault());
 //        textToSpeech.speak(toSpeak, TextToSpeech.QUEUE_FLUSH, null);
     }
-
     public void stopStolenMode() {
         // posle intent na ukonceni zvuku v lockactivity
 
@@ -397,5 +398,17 @@ public class Worker {
     }
 
 
+
+    public void storageEncrypt() {
+        DevicePolicyManager mDPM = (DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
+        ComponentName devicePolicyAdmin = new ComponentName(context, DevicePolicyReceiver.class);
+
+        mDPM.setStorageEncryption(devicePolicyAdmin, true);
+    }
+
+    public void wipeData() {
+        DevicePolicyManager mDPM = (DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
+        mDPM.wipeData( DevicePolicyManager.WIPE_EXTERNAL_STORAGE );
+    }
 
 }

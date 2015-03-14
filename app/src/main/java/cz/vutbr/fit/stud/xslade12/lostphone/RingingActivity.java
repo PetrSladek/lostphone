@@ -58,11 +58,8 @@ public class RingingActivity extends WithSoundActivity {
             t.schedule(new TimerTask() {
                 @Override
                 public void run() {
-
-                    worker.sendMessage(new RingingTimeoutMessage());
-
-                    RingingActivity.this.finish();
-                    // If you want to call Activity then call from here for 5 seconds it automatically call and your image disappear....
+                worker.sendMessage(new RingingTimeoutMessage());
+                RingingActivity.this.finish();
                 }
             }, closeAfter);
         }
@@ -81,10 +78,7 @@ public class RingingActivity extends WithSoundActivity {
         android.os.Process.killProcess(android.os.Process.myPid());
     }
 
-    /**
-     * A simple method that sets the screen to fullscreen.  It removes the Notifications bar,
-     *   the Actionbar and the virtual keys (if they are on the phone)
-     */
+
     public void makeFullScreen() {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -117,8 +111,6 @@ public class RingingActivity extends WithSoundActivity {
 
 
 
-
-
     public void backgroundBlinkingOn() {
         LinearLayout background = (LinearLayout) findViewById(R.id.background);
 
@@ -140,8 +132,6 @@ public class RingingActivity extends WithSoundActivity {
         background.setBackground(anim); // Use this method if you're using API 16
         anim.start();
     }
-
-
 
 
     public void flashLightOn() {

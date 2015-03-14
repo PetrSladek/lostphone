@@ -29,8 +29,6 @@ import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 import java.io.IOException;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import cz.vutbr.fit.stud.xslade12.lostphone.messages.RegistrationMessage;
 
@@ -74,7 +72,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         devicePolicyManager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
-        devicePolicyAdmin = new ComponentName(this, MyDevicePolicyReceiver.class);
+        devicePolicyAdmin = new ComponentName(this, DevicePolicyReceiver.class);
 
         checkBoxDevicePolicyEnabled = (CheckBox) findViewById(R.id.checkBoxDevicePolicyEnabled);
         checkBoxGCMRegistered = (CheckBox) findViewById(R.id.checkBoxGCMRegistered);

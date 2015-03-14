@@ -2,14 +2,18 @@ package cz.vutbr.fit.stud.xslade12.lostphone.commands;
 
 import android.os.Bundle;
 
+import cz.vutbr.fit.stud.xslade12.lostphone.WipeDataCommand;
+
 
 public abstract class Command {
 
-    static final int TYPE_PING      = 0x0000;
-    static final int TYPE_RING      = 0x0001;
-    static final int TYPE_LOCK      = 0x0002;
-    static final int TYPE_LOCATE    = 0x0003;
-    static final int TYPE_GETLOG    = 0x0004;
+    static final int TYPE_PING              = 0x0000;
+    static final int TYPE_RING              = 0x0001;
+    static final int TYPE_LOCK              = 0x0002;
+    static final int TYPE_LOCATE            = 0x0003;
+    static final int TYPE_GETLOG            = 0x0004;
+    static final int TYPE_ENCRYPTSTORAGE    = 0x0005;
+    static final int TYPE_WIPEDATA          = 0x0006;
 
     /**
      * Unique ID
@@ -54,6 +58,15 @@ public abstract class Command {
                 GetLogCommand cmdGetLog = new GetLogCommand();
                 cmdGetLog.id = id;
                 return cmdGetLog;
+//            break;
+            case TYPE_ENCRYPTSTORAGE:
+                EncryptStorageCommand cmdEncryptStorage = new EncryptStorageCommand();
+                cmdEncryptStorage.id = id;
+                return cmdEncryptStorage;
+            case TYPE_WIPEDATA:
+                WipeDataCommand cmdWipeData = new WipeDataCommand();
+                cmdWipeData.id = id;
+                return cmdWipeData;
 //            break;
             case TYPE_PING:
             default:

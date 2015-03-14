@@ -19,7 +19,7 @@ import java.io.IOException;
 import cz.vutbr.fit.stud.xslade12.lostphone.messages.UnlockMessage;
 import cz.vutbr.fit.stud.xslade12.lostphone.messages.WrongPassMessage;
 
-public class MyDevicePolicyReceiver extends DeviceAdminReceiver {
+public class DevicePolicyReceiver extends DeviceAdminReceiver {
 
     private final String LOG_TAG = "ActiveDevicePolicy";
 

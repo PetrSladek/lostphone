@@ -1,27 +1,16 @@
 package cz.vutbr.fit.stud.xslade12.lostphone;
 
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.KeyguardManager;
-import android.app.admin.DeviceAdminReceiver;
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -58,7 +47,7 @@ public class LockScreenActivity extends WithSoundActivity {
 
 
         mDPM = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);;
-        mDeviceAdminSample = new ComponentName(this, MyDevicePolicyReceiver.class);
+        mDeviceAdminSample = new ComponentName(this, DevicePolicyReceiver.class);
 
         // http://stackoverflow.com/questions/3594532/how-to-programmaticaly-lock-screen-in-android
         // http://stackoverflow.com/questions/4545079/lock-the-android-device-programatically
