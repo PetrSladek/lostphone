@@ -1,6 +1,7 @@
 package cz.vutbr.fit.stud.xslade12.lostphone;
 
 import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -17,26 +18,32 @@ import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import cz.vutbr.fit.stud.xslade12.lostphone.messages.GotchaMessage;
+import cz.vutbr.fit.stud.xslade12.lostphone.messages.RingingTimeoutMessage;
 import cz.vutbr.fit.stud.xslade12.lostphone.messages.UnlockMessage;
 
 
 public class RingingActivity extends Activity {
 
+    protected static Worker worker;
 
-    public static MediaPlayer mp = null;
-    public static Camera cam = null;// has to be static, otherwise onDestroy() destroys it
-    public static Vibrator vib = null;
+    protected static MediaPlayer mp = null;
+    protected static Camera cam = null;// has to be static, otherwise onDestroy() destroys it
+    protected static Vibrator vib = null;
 
 
-
-    public int originalRingerMode;
-
+    protected int originalRingerMode;
+    protected boolean originalBluetoothEnabled;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ringing);
+
+        worker = new Worker(this);
 
         makeFullScreen();
 
@@ -44,19 +51,35 @@ public class RingingActivity extends Activity {
         flashLightOn();
         backgroundBlinkingOn();
         vibratorOn();
+
+        bluetoothOff(); // vypnu bluetooth kvuli např zaplemu Handsfree
+
+        long closeAfter = getIntent().getLongExtra("closeAfter", 0);
+        if(closeAfter > 0) {
+            // Naplanuj vypnuti na x sekund
+            Timer t = new Timer();
+            t.schedule(new TimerTask() {
+                @Override
+                public void run() {
+
+                    worker.sendMessage(new RingingTimeoutMessage());
+
+                    RingingActivity.this.finish();
+                    // If you want to call Activity then call from here for 5 seconds it automatically call and your image disappear....
+                }
+            }, closeAfter);
+        }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
 
-        GotchaMessage msg = new GotchaMessage();
-        Worker worker = new Worker(getApplicationContext());
-        worker.sendMessage(msg);
-
         soundOff();
         flashLightOff();
         vibratorOff();
+
+        bluetoothOn(); // opet povolim Bluetooth jestli bylo predtim zapnute
 
         android.os.Process.killProcess(android.os.Process.myPid());
     }
@@ -73,6 +96,7 @@ public class RingingActivity extends Activity {
     }
 
     public void onClickBtnGotcha(View view) {
+        worker.sendMessage( new GotchaMessage() );
         finish();
     }
 
@@ -180,6 +204,36 @@ public class RingingActivity extends Activity {
             e.printStackTrace();
             Toast.makeText(getBaseContext(), "Exception flashLightOff", Toast.LENGTH_SHORT).show();
         }
+    }
+
+
+    public void bluetoothOff() {
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if(bluetoothAdapter == null)
+            return;
+
+        originalBluetoothEnabled = bluetoothAdapter.isEnabled();
+        setBluetooth(false); // disable bluetooth
+    }
+
+     public void bluetoothOn() {
+         setBluetooth(originalBluetoothEnabled); // disable bluetooth
+     }
+
+
+    public static boolean setBluetooth(boolean enable) {
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if(bluetoothAdapter == null)
+            return false;
+        boolean isEnabled = bluetoothAdapter.isEnabled();
+        if (enable && !isEnabled) {
+            return bluetoothAdapter.enable();
+        }
+        else if(!enable && isEnabled) {
+            return bluetoothAdapter.disable();
+        }
+        // No need to change bluetooth state
+        return true;
     }
 
 }

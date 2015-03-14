@@ -7,6 +7,7 @@ import retrofit.Callback;
 import retrofit.http.Body;
 import retrofit.http.Field;
 import retrofit.http.FormUrlEncoded;
+import retrofit.http.Header;
 import retrofit.http.Multipart;
 import retrofit.http.POST;
 import retrofit.http.Part;
@@ -21,17 +22,17 @@ import retrofit.mime.TypedString;
  */
 public interface ApiServiceInterface {
 
-    public static final String ENDPOINT = "http://local2.sdhklepacov.cz/api/";
+    public static final String ENDPOINT = "http://local.sdhklepacov.cz/api/";
 
     @POST("/messages/")
-    void createMessage(@Body Message message, Callback<String> cb);
+    void createMessage(@Header("Device") String gcmId, @Body Message message, Callback<String> cb);
 
     @Multipart
     @POST("/messages/")
-    void createWrongPassMessage(@Part("type") TypedString type, @Part("date") TypedString date, @Part("frontPhoto") TypedFile frontPhoto, Callback<String> cb);
+    void createWrongPassMessage(@Header("Device") String gcmId, @Part("type") TypedString type, @Part("date") TypedString date, @Part("frontPhoto") TypedFile frontPhoto, Callback<String> cb);
 
 
     @FormUrlEncoded
     @POST("/ack/{id}")
-    void ackCommand(@Path("id") int id, @Field("date") Date date, Callback<String> cb);
+    void ackCommand(@Header("Device") String gcmId, @Path("id") int id, @Field("date") Date date, Callback<String> cb);
 }

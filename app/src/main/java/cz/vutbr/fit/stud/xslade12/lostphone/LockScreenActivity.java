@@ -33,6 +33,12 @@ public class LockScreenActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+
+
+        // home key is locked since then
+//        homeKeyLocker.unlock();
+//        // home key is unlocked since
+
 //        startService(new Intent(this, LockScreenService.class));
 //
 //        super.onCreate(savedInstanceState);
@@ -69,12 +75,21 @@ public class LockScreenActivity extends Activity {
     }
 
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        android.os.Process.killProcess(android.os.Process.myPid());
+    }
+
     protected void lockPhone(String password) {
         mDPM.resetPassword(password, 0);
         mDPM.lockNow();
     }
 
     protected void unlockPhone() {
+
+
 
         mDPM.setPasswordQuality(mDeviceAdminSample, DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED);
         mDPM.setPasswordMinimumLength(mDeviceAdminSample, 0);
@@ -85,17 +100,14 @@ public class LockScreenActivity extends Activity {
         lock.disableKeyguard();
 
         Worker worker = new Worker(this);
-        SharedPreferences.Editor editor = worker.getPreferences().edit();
-        editor.putBoolean("locked", false);
-        editor.commit();
+        worker.setLocked(false);
 
 //        Intent startMain = new Intent(Intent.ACTION_MAIN);
 //        startMain.addCategory(Intent.CATEGORY_HOME);
 //        startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 //        startActivity(startMain);
 
-//        finish();
-        android.os.Process.killProcess(android.os.Process.myPid());
+        finish();
     }
 
 
@@ -131,7 +143,7 @@ public class LockScreenActivity extends Activity {
 //        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+//        getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON, WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED, WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
 
@@ -191,6 +203,10 @@ public class LockScreenActivity extends Activity {
             unlockPhone(); // zrusi heslo
 
         } else {
+
+            Worker worker = new Worker(this);
+            worker.passwordFailed();
+
             Toast.makeText(this, R.string.wrongPin, Toast.LENGTH_SHORT).show();
         }
     }

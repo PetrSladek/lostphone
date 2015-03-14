@@ -33,6 +33,7 @@ public abstract class Command {
             case TYPE_RING:
                 RingCommand cmdRing = new RingCommand();
                 cmdRing.id = id;
+                cmdRing.closeAfter = Long.valueOf(data.getString("closeAfter"));
                 return cmdRing;
 //            break;
             case TYPE_LOCK:

@@ -28,6 +28,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 import com.google.android.gms.common.ConnectionResult;
@@ -54,7 +55,7 @@ public class MainActivity extends Activity {
     GoogleCloudMessaging gcm;
     String regid;
 
-    public static final String PROPERTY_REG_ID = "registration_id";
+    public static final String PROPERTY_REG_ID = "gcmId";
     private static final String PROPERTY_APP_VERSION = "appVersion";
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
@@ -100,6 +101,11 @@ public class MainActivity extends Activity {
         } else {
             Log.i(TAG, "No valid Google Play Services APK found.");
         }
+
+//        Worker worker = new Worker(this);
+//        worker.passwordFailed();
+
+
 
     }
 
@@ -276,7 +282,7 @@ public class MainActivity extends Activity {
     private SharedPreferences getGcmPreferences(Context context) {
         // This sample app persists the registration ID in shared preferences, but
         // how you store the regID in your app is up to you.
-        return getSharedPreferences(DemoActivity.class.getSimpleName(), Context.MODE_PRIVATE);
+        return getSharedPreferences("global", Context.MODE_PRIVATE);
     }
     /**
      * Sends the registration ID to your server over HTTP, so it can use GCM/HTTP or CCS to send
@@ -452,6 +458,9 @@ public class MainActivity extends Activity {
         } else if(view.getId() == R.id.btnStartDemoActivity) {
             Intent intent = new Intent(this, DemoActivity.class);
             startActivity(intent);
+
+
+
         }
     }
 

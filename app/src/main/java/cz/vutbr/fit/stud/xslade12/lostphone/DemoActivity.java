@@ -270,8 +270,7 @@ public class DemoActivity extends Activity {
     private SharedPreferences getGcmPreferences(Context context) {
         // This sample app persists the registration ID in shared preferences, but
         // how you store the regID in your app is up to you.
-        return getSharedPreferences(DemoActivity.class.getSimpleName(),
-                Context.MODE_PRIVATE);
+        return getSharedPreferences("global", Context.MODE_PRIVATE);
     }
     /**
      * Sends the registration ID to your server over HTTP, so it can use GCM/HTTP or CCS to send
