@@ -11,6 +11,7 @@ import android.location.Location;
 import android.net.Uri;
 import android.provider.CallLog;
 import android.provider.Telephony;
+import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -19,6 +20,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
+import java.util.Locale;
+import java.util.Random;
 
 import cz.vutbr.fit.stud.xslade12.lostphone.commands.Command;
 import cz.vutbr.fit.stud.xslade12.lostphone.commands.GetLogCommand;
@@ -117,36 +120,7 @@ public class Worker {
         context.startActivity(intent);
     }
     protected void processLock(LockCommand command) {
-
-        setLocked(true);
-
-        DevicePolicyManager mDPM = (DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
-        context.startService(new Intent(context, LockScreenService.class));
-
-
-//        Intent intent = new Intent(context, LockScreenActivity.class);
-//        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); // aby se dala otevrit ze service
-//        context.startActivity(intent);
-
-        // todo save ownerNumber
-        mDPM.resetPassword(command.getPassword(), 0);
-        mDPM.lockNow();
-//        mDPM.resetPassword("", 0);
-
-//        context.startService(new Intent(context, OverlayService.class));
-
-//        //
-//        KeyguardManager keyguardManager = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
-//        KeyguardManager.KeyguardLock lock = keyguardManager.newKeyguardLock(Context.KEYGUARD_SERVICE);
-//
-//        lock.disableKeyguard();
-
-        Intent intent = new Intent(context, LockScreenActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); // aby se dala otevrit ze service
-        context.startActivity(intent);
-
-        // Todo nejdriv poslat request a pak to teprve spustit
-//        sendResponse(response);
+        startLockMode(command.getPassword(), command.getDisplayText(), command.getOwnerPhoneNumber());
     }
     protected void processLocate(LocateCommand command) {
         locateDevice();
@@ -347,14 +321,79 @@ public class Worker {
 
     }
 
-
-
-    public String readPhoneNumber() {
-        return preferences.getString(PROPERTY_PHONENUMBER, "");
+    public void startLockMode(String password) {
+        startLockMode(password, null, null, false);
     }
-    public void storePhoneNumber(String phoneNumber) {
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putString(PROPERTY_PHONENUMBER, phoneNumber);
+    public void startLockMode(String password, String displayText, String ownerPhoneNumber) {
+        startLockMode(password, displayText, ownerPhoneNumber, false);
+    }
+    public void startLockMode(String password, String displayText, String ownerPhoneNumber, Boolean stolenMode) {
+        setLocked(true);
+
+        DevicePolicyManager mDPM = (DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
+        context.startService(new Intent(context, LockScreenService.class));
+
+
+//        Intent intent = new Intent(context, LockScreenActivity.class);
+//        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); // aby se dala otevrit ze service
+//        context.startActivity(intent);
+
+        // todo save ownerNumber
+        mDPM.resetPassword(password, 0);
+        mDPM.lockNow();
+//        mDPM.resetPassword("", 0);
+
+//        context.startService(new Intent(context, OverlayService.class));
+
+//        //
+//        KeyguardManager keyguardManager = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
+//        KeyguardManager.KeyguardLock lock = keyguardManager.newKeyguardLock(Context.KEYGUARD_SERVICE);
+//
+//        lock.disableKeyguard();
+
+        Intent intent = new Intent(context, LockScreenActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); // aby se dala otevrit ze service
+        intent.putExtra("stolenMode", stolenMode);
+        context.startActivity(intent);
+    }
+
+    public void stopLockMode() {
+        // posle intent na ukonceni LockActivity
+    }
+
+
+//    TextToSpeech textToSpeech;
+    public void startStolenMode(String password) {
+        startLockMode(password, null, null, true);
+
+
+        // Spusti rinceni stolen
+
+
+
+//        String toSpeak = "This phone has been stolen";
+//
+//        textToSpeech = new TextToSpeech( context, new TextToSpeech.OnInitListener() {
+//            @Override
+//            public void onInit(int status) {
+//                if(status == TextToSpeech.SUCCESS){
+//                    textToSpeech.setLanguage(Locale.US);
+//                }
+//            }
+//        } );
+//        textToSpeech.setLanguage(Locale.getDefault());
+//        textToSpeech.speak(toSpeak, TextToSpeech.QUEUE_FLUSH, null);
+    }
+
+    public void stopStolenMode() {
+        // posle intent na ukonceni zvuku v lockactivity
+
+        Intent intent = new Intent(context, LockScreenActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP); // aby se pustil onNewIntent
+        intent.putExtra("stolenMode", false); // Vypnu stolen Mode (zvuk has been stolen)
+        context.startActivity(intent);
+
     }
 
 

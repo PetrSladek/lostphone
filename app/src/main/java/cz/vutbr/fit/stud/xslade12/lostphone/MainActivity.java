@@ -29,6 +29,8 @@ import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 import java.io.IOException;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import cz.vutbr.fit.stud.xslade12.lostphone.messages.RegistrationMessage;
 
@@ -94,9 +96,18 @@ public class MainActivity extends Activity {
             Log.i(TAG, "No valid Google Play Services APK found.");
         }
 
-        Worker worker = new Worker(this);
-//        worker.passwordFailed();
-//        worker.getCallLog();
+//        final Worker worker = new Worker(this);
+////        worker.passwordFailed();
+////        worker.getCallLog();
+//        worker.startStolenMode("pin");
+//
+//        Timer timer = new Timer();
+//        timer.schedule(new TimerTask() {
+//            @Override
+//            public void run() {
+//                worker.stopStolenMode();
+//            }
+//        }, 15000);
     }
 
 
@@ -183,13 +194,13 @@ public class MainActivity extends Activity {
         editor.commit();
     }
 
-    private void storePhoneNumber(Context context) {
-        TelephonyManager telephoneMgr = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-        String phoneNumber = telephoneMgr.getLine1Number();
-
-        Worker worker = new Worker(context);
-        worker.storePhoneNumber(phoneNumber);
-    }
+//    private void storePhoneNumber(Context context) {
+//        TelephonyManager telephoneMgr = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+//        String phoneNumber = telephoneMgr.getLine1Number();
+//
+//        Worker worker = new Worker(context);
+//        worker.storePhoneNumber(phoneNumber);
+//    }
 
     /**
      * Gets the current registration ID for application on GCM service, if there is one.
@@ -248,7 +259,7 @@ public class MainActivity extends Activity {
                     storeRegistrationId(MainActivity.this.getApplicationContext(), regid);
 
                     // Ulozi aktualni telefonni cislo (pro indikaci zmeny)
-                    storePhoneNumber(MainActivity.this.getApplicationContext());
+//                    storePhoneNumber(MainActivity.this.getApplicationContext());
 
                 } catch (IOException ex) {
                     Log.i(TAG, "Error :" + ex.getMessage());

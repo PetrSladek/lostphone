@@ -9,6 +9,8 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -24,10 +26,12 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 
-public class LockScreenActivity extends Activity {
+public class LockScreenActivity extends WithSoundActivity {
 
     DevicePolicyManager mDPM;
     ComponentName mDeviceAdminSample;
+
+    protected static MediaPlayer mp = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +75,8 @@ public class LockScreenActivity extends Activity {
         //Set up our Lockscreen
         makeFullScreen();
 
+        onNewIntent(getIntent());
+
 //        lockPhone("1234");
     }
 
@@ -79,7 +85,21 @@ public class LockScreenActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
 
+        soundOff();
         android.os.Process.killProcess(android.os.Process.myPid());
+    }
+
+    protected int originalRingerMode;
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+
+        if(intent.getExtras().getBoolean("stolenMode")) {
+            soundOn(R.raw.stolen);
+        } else {
+            soundOff();
+        }
     }
 
     protected void lockPhone(String password) {
