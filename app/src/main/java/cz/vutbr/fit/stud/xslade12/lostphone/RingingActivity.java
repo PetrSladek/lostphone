@@ -34,10 +34,6 @@ public class RingingActivity extends WithSoundActivity {
     protected static Camera cam = null;// has to be static, otherwise onDestroy() destroys it
     protected static Vibrator vib = null;
 
-    protected int originalRingerMode;
-    protected boolean originalBluetoothEnabled;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +44,7 @@ public class RingingActivity extends WithSoundActivity {
 
         makeFullScreen();
 
-        soundOn(R.raw.woopwoop);
+        soundOn(R.raw.sirena);
         flashLightOn();
         backgroundBlinkingOn();
         vibratorOn();

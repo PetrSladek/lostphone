@@ -9,7 +9,7 @@ import android.telephony.SmsMessage;
 /**
  * Created by Peggy on 14.3.2015.
  */
-public class SmsMessageReciever extends BroadcastReceiver
+public class SmsCommandReciever extends BroadcastReceiver
 {
     @Override
     public void onReceive(Context context, Intent intent)
