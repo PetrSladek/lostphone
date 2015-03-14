@@ -10,7 +10,7 @@ public class SimStateChangedMessage extends Message {
     }
 
 
-    protected String deviceId;
+    protected String imei;
 
     protected String subscriberId;
 
@@ -31,12 +31,12 @@ public class SimStateChangedMessage extends Message {
     protected String simSerialNumber;
 
 
-    public String getDeviceId() {
-        return deviceId;
+    public String getImei() {
+        return imei;
     }
 
-    public void setDeviceId(String deviceId) {
-        this.deviceId = deviceId;
+    public void setImei(String imei) {
+        this.imei = imei;
     }
 
     public String getSubscriberId() {

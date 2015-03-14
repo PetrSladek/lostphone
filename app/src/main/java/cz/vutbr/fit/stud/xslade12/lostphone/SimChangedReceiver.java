@@ -5,9 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-import android.widget.Toast;
 
-import cz.vutbr.fit.stud.xslade12.lostphone.messages.Message;
 import cz.vutbr.fit.stud.xslade12.lostphone.messages.SimStateChangedMessage;
 
 /**
@@ -73,7 +71,7 @@ public class SimChangedReceiver extends BroadcastReceiver {
         msg.setNetworkOperator ( telephoneMgr.getNetworkOperator() ); // ze site na ktere jsem
         msg.setNetworkOperatorName ( telephoneMgr.getNetworkOperatorName() ); // ze site na ktere jsem
         msg.setNetworkCountryIso( telephoneMgr.getNetworkCountryIso() );// ze site na ktere jsem
-        msg.setDeviceId( telephoneMgr.getDeviceId() ); // IMEI
+        msg.setImei(telephoneMgr.getDeviceId()); // IMEI
         msg.setSimCountryIso( telephoneMgr.getSimCountryIso() ); // ze site ktere patri SIM karta
         msg.setSimOperator( telephoneMgr.getSimOperator() );// ze site ktere patri SIM karta
         msg.setSimOperatorName( telephoneMgr.getSimOperatorName() );// ze site ktere patri SIM karta

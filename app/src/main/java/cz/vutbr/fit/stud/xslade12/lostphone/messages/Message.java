@@ -12,6 +12,7 @@ public abstract class Message {
     static final int TYPE_WRONGPASS         = 0x0005;
     static final int TYPE_LOCATION          = 0x0006;
     static final int TYPE_SIMSTATECHANGED   = 0x0007;
+    static final int TYPE_LOG               = 0x0008;
 
     protected int type;
 

@@ -9,6 +9,7 @@ public abstract class Command {
     static final int TYPE_RING      = 0x0001;
     static final int TYPE_LOCK      = 0x0002;
     static final int TYPE_LOCATE    = 0x0003;
+    static final int TYPE_GETLOG    = 0x0004;
 
     /**
      * Unique ID
@@ -48,6 +49,11 @@ public abstract class Command {
                 LocateCommand cmdLocate = new LocateCommand();
                 cmdLocate.id = id;
                 return cmdLocate;
+//            break;
+            case TYPE_GETLOG:
+                GetLogCommand cmdGetLog = new GetLogCommand();
+                cmdGetLog.id = id;
+                return cmdGetLog;
 //            break;
             case TYPE_PING:
             default:

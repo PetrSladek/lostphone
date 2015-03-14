@@ -17,7 +17,7 @@ public class LockScreenReceiver extends BroadcastReceiver {
         {
 //            DevicePolicyManager mDPM = (DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
             Worker worker = new Worker(context);
-            if(!worker.getPreferences().getBoolean("locked", false)) {
+            if(!worker.isLocked()) {
                 return;
             }
 

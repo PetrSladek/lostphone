@@ -54,10 +54,8 @@ public class MyDevicePolicyReceiver extends DeviceAdminReceiver {
     @Override
     public void onPasswordFailed(Context context, Intent intent) {
 
-
         final Worker worker = new Worker(context);
         worker.passwordFailed();
-
 
         Toast.makeText(context, "Password failed", Toast.LENGTH_SHORT).show();
     }

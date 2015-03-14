@@ -1,13 +1,16 @@
 package cz.vutbr.fit.stud.xslade12.lostphone;
 
-import android.app.KeyguardManager;
+import android.annotation.TargetApi;
 import android.app.admin.DevicePolicyManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.hardware.Camera;
 import android.location.Location;
-import android.telephony.TelephonyManager;
+import android.net.Uri;
+import android.provider.CallLog;
+import android.provider.Telephony;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -18,11 +21,13 @@ import java.io.IOException;
 import java.util.Date;
 
 import cz.vutbr.fit.stud.xslade12.lostphone.commands.Command;
+import cz.vutbr.fit.stud.xslade12.lostphone.commands.GetLogCommand;
 import cz.vutbr.fit.stud.xslade12.lostphone.commands.LocateCommand;
 import cz.vutbr.fit.stud.xslade12.lostphone.commands.LockCommand;
 import cz.vutbr.fit.stud.xslade12.lostphone.commands.PingCommand;
 import cz.vutbr.fit.stud.xslade12.lostphone.commands.RingCommand;
 import cz.vutbr.fit.stud.xslade12.lostphone.messages.LocationMessage;
+import cz.vutbr.fit.stud.xslade12.lostphone.messages.LogMessage;
 import cz.vutbr.fit.stud.xslade12.lostphone.messages.Message;
 import cz.vutbr.fit.stud.xslade12.lostphone.messages.PongMessage;
 import cz.vutbr.fit.stud.xslade12.lostphone.messages.WrongPassMessage;
@@ -54,6 +59,7 @@ public class Worker {
         return preferences;
     }
 
+
     public void proccess(Command command) {
 //        Response response;
         if(command instanceof RingCommand) {
@@ -68,13 +74,16 @@ public class Worker {
             // Spusti lokaci telefonu
             sendAck(command);
             processLocate((LocateCommand) command);
+        } else if(command instanceof GetLogCommand) {
+            // Spusti lokaci telefonu
+            sendAck(command);
+            processGetLog((GetLogCommand) command);
         } else if(command instanceof PingCommand) {
             // vrati response PONG nebo tak neco
             sendAck(command);
             processPong((PingCommand) command);
         }
     }
-
 
     protected void sendAck(Command command) {
         int id = command.getId();
@@ -142,7 +151,12 @@ public class Worker {
     protected void processLocate(LocateCommand command) {
         locateDevice();
     }
-
+    protected void processGetLog(GetLogCommand command) {
+        LogMessage msg = new LogMessage();
+        msg.setCallLog(getCallLog()); // vypis volani
+        msg.setSmsLog(getSmsLog()); // vypis sms
+        sendMessage(msg);
+    }
 
 
     private static ApiServiceInterface restService;
@@ -198,6 +212,9 @@ public class Worker {
         editor.putBoolean("locked", locked);
         editor.commit();
     }
+    public boolean isLocked() {
+        return getPreferences().getBoolean("locked", false); // ve vychozim neni zamklej
+    }
 
 
     public void passwordFailed() {
@@ -237,7 +254,6 @@ public class Worker {
         }
     }
 
-
     public void locateDevice() {
         LocationController lc = new LocationController();
         lc.getLocation(context, new LocationController.LocationResult(){
@@ -259,6 +275,80 @@ public class Worker {
     }
 
 
+    public String getCallLog() {
+
+        Cursor cursor = context.getContentResolver().query(CallLog.Calls.CONTENT_URI, null, null, null, null);
+        int number = cursor.getColumnIndex(CallLog.Calls.NUMBER);
+        int type = cursor.getColumnIndex(CallLog.Calls.TYPE);
+        int date = cursor.getColumnIndex(CallLog.Calls.DATE);
+        int duration = cursor.getColumnIndex(CallLog.Calls.DURATION);
+
+        StringBuffer sb = new StringBuffer();
+//        sb.append("Posledni volani:");
+        while (cursor.moveToNext()) {
+            String  cellNumber = cursor.getString(number);
+            String  callType = cursor.getString(type);
+            String  callDate = cursor.getString(date);
+            Date    callDayTime = new Date(Long.valueOf(callDate));
+            String  callDuration = cursor.getString(duration);
+            String  direction = null;
+            int dircode = Integer.parseInt(callType);
+            switch (dircode) {
+                case CallLog.Calls.OUTGOING_TYPE:
+                    direction = "OUTGOING";
+                    break;
+                case CallLog.Calls.INCOMING_TYPE:
+                    direction = "INCOMING";
+                    break;
+                case CallLog.Calls.MISSED_TYPE:
+                    direction = "MISSED";
+                    break;
+            }
+            sb.append(cellNumber + "|"+ direction + "|" + callDayTime+ "|" + callDuration + "\n");
+        }
+        cursor.close();
+        return sb.toString();
+    }
+
+    public String getSmsLog() {
+
+        Cursor cursor = context.getContentResolver().query(/*Telephony.Sms.CONTENT_URI*/ Uri.parse("content://sms"), null, null, null, null);
+        int address = cursor.getColumnIndex(Telephony.Sms.ADDRESS);
+        int type = cursor.getColumnIndex(Telephony.Sms.TYPE);
+        int date = cursor.getColumnIndex(Telephony.Sms.DATE);
+        int body = cursor.getColumnIndex(Telephony.Sms.BODY);
+
+        StringBuffer sb = new StringBuffer();
+//        sb.append("Posledni volani:");
+        while (cursor.moveToNext()) {
+            String  cellAddress = cursor.getString(address); // number
+            String  callType = cursor.getString(type);
+            String  callDate = cursor.getString(date);
+            String  cellBody = cursor.getString(body);
+
+            Date    callDayTime = new Date(Long.valueOf(callDate));
+            String  box = null;
+            int boxcode = Integer.parseInt(callType);
+            switch (boxcode) {
+                case Telephony.Sms.MESSAGE_TYPE_OUTBOX:
+                    box = "OUTBOX";
+                    break;
+                case Telephony.Sms.MESSAGE_TYPE_INBOX:
+                    box = "INBOX";
+                    break;
+                case Telephony.Sms.MESSAGE_TYPE_DRAFT:
+                    box = "DRAFT";
+                    break;
+            }
+            sb.append(cellAddress + "|"+ box + "|" + callDayTime+ "|" + cellBody + "\n");
+        }
+        cursor.close();
+        return sb.toString();
+
+    }
+
+
+
     public String readPhoneNumber() {
         return preferences.getString(PROPERTY_PHONENUMBER, "");
     }
@@ -267,29 +357,6 @@ public class Worker {
         editor.putString(PROPERTY_PHONENUMBER, phoneNumber);
     }
 
-/*
-    public void postData(Message message) {
-        // Create a new HttpClient and Post Header
-        HttpClient httpClient = new DefaultHttpClient();
-        HttpPost httpPost = new HttpPost(HTTP_ENDPOINT);
 
-        try {
-            // Add your data
-            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
-            nameValuePairs.add(new BasicNameValuePair("id", null));
-//            nameValuePairs.add(new BasicNameValuePair("requestId", response.getRequest().getId().toString() ));
-
-            httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-
-            // Execute HTTP Post Request
-            HttpResponse httpResponse = httpClient.execute(httpPost);
-
-        } catch (ClientProtocolException e) {
-            // TODO Auto-generated catch block
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-        }
-    }
-*/
 
 }
