@@ -11,8 +11,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.graphics.PixelFormat;
-import android.hardware.Camera;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -22,22 +20,14 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
-import android.widget.TextView;
-import android.widget.Toast;
 
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 
 import cz.vutbr.fit.stud.xslade12.lostphone.messages.RegistrationMessage;
@@ -57,6 +47,8 @@ public class MainActivity extends Activity {
 
     public static final String PROPERTY_REG_ID = "gcmId";
     private static final String PROPERTY_APP_VERSION = "appVersion";
+
+
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
 
@@ -184,13 +176,21 @@ public class MainActivity extends Activity {
      * @param regId registration ID
      */
     private void storeRegistrationId(Context context, String regId) {
-        final SharedPreferences prefs = getGcmPreferences(context);
+        SharedPreferences prefs = getAppSharedPreferences(context);
         int appVersion = getAppVersion(context);
         Log.i(TAG, "Saving regId on app version " + appVersion);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString(PROPERTY_REG_ID, regId);
         editor.putInt(PROPERTY_APP_VERSION, appVersion);
         editor.commit();
+    }
+
+    private void storePhoneNumber(Context context) {
+        TelephonyManager telephoneMgr = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+        String phoneNumber = telephoneMgr.getLine1Number();
+
+        Worker worker = new Worker(context);
+        worker.storePhoneNumber(phoneNumber);
     }
 
     /**
@@ -202,7 +202,7 @@ public class MainActivity extends Activity {
      *         registration ID.
      */
     private String getRegistrationId(Context context) {
-        final SharedPreferences prefs = getGcmPreferences(context);
+        final SharedPreferences prefs = getAppSharedPreferences(context);
         String registrationId = prefs.getString(PROPERTY_REG_ID, "");
         if (registrationId.isEmpty()) {
             Log.i(TAG, "Registration not found.");
@@ -248,6 +248,10 @@ public class MainActivity extends Activity {
 
                     // Persist the regID - no need to register again.
                     storeRegistrationId(MainActivity.this.getApplicationContext(), regid);
+
+                    // Ulozi aktualni telefonni cislo (pro indikaci zmeny)
+                    storePhoneNumber(MainActivity.this.getApplicationContext());
+
                 } catch (IOException ex) {
                     Log.i(TAG, "Error :" + ex.getMessage());
                     // If there is an error, don't just keep trying to register.
@@ -279,7 +283,7 @@ public class MainActivity extends Activity {
     /**
      * @return Application's {@code SharedPreferences}.
      */
-    private SharedPreferences getGcmPreferences(Context context) {
+    private SharedPreferences getAppSharedPreferences(Context context) {
         // This sample app persists the registration ID in shared preferences, but
         // how you store the regID in your app is up to you.
         return getSharedPreferences("global", Context.MODE_PRIVATE);

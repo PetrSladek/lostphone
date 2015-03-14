@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.hardware.Camera;
 import android.location.Location;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -36,12 +37,12 @@ import retrofit.mime.TypedString;
 
 public class Worker {
 
-//    static final String HTTP_ENDPOINT = "http://lostphone.dev/gate/";
-
     static final String TAG = "LostPhone-Worker";
     Context context;
     String gcmId;
     SharedPreferences preferences;
+
+    private static final String PROPERTY_PHONENUMBER = "phoneNumber";
 
     public Worker(Context context) {
         this.context = context;
@@ -257,6 +258,14 @@ public class Worker {
         });
     }
 
+
+    public String readPhoneNumber() {
+        return preferences.getString(PROPERTY_PHONENUMBER, "");
+    }
+    public void storePhoneNumber(String phoneNumber) {
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(PROPERTY_PHONENUMBER, phoneNumber);
+    }
 
 /*
     public void postData(Message message) {
