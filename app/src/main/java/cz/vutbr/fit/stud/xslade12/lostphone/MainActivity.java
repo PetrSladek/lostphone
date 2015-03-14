@@ -96,6 +96,7 @@ public class MainActivity extends Activity {
             Log.i(TAG, "No valid Google Play Services APK found.");
         }
 
+
 //        final Worker worker = new Worker(this);
 ////        worker.passwordFailed();
 ////        worker.getCallLog();
