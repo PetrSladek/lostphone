@@ -5,13 +5,16 @@ import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 
@@ -20,13 +23,13 @@ public class LockScreenActivity extends WithSoundActivity {
     DevicePolicyManager mDPM;
     ComponentName mDeviceAdminSample;
 
-    protected static MediaPlayer mp = null;
+    Worker worker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
+        worker = new Worker(this);
 
         // home key is locked since then
 //        homeKeyLocker.unlock();
@@ -59,88 +62,34 @@ public class LockScreenActivity extends WithSoundActivity {
         //lock.disableKeyguard()
         // ---
 
-        setContentView(R.layout.activity_lock_screen);
-
         //Set up our Lockscreen
         makeFullScreen();
 
-        onNewIntent(getIntent());
+        setContentView(R.layout.activity_lock_screen);
 
-//        lockPhone("1234");
+        String text = worker.getPreferences().getString("displayText", null);
+        TextView textView = (TextView) findViewById(R.id.displayText);
+        textView.setText( text );
+
+        // your text box
+        EditText editUnlock = (EditText) findViewById(R.id.editUnlock);
+        final Button btnUnlock = (Button) findViewById(R.id.btnUnlock);
+
+        editUnlock.setOnEditorActionListener(new EditText.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    btnUnlock.performClick();
+                    return true;
+                }
+                return false;
+            }
+        });
+
+
+        processIntent(getIntent());
+
     }
-
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-
-        soundOff();
-        android.os.Process.killProcess(android.os.Process.myPid());
-    }
-
-    protected int originalRingerMode;
-
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-
-        if(intent.getExtras().getBoolean("stolenMode")) {
-            soundOn(R.raw.stolen);
-        } else {
-            soundOff();
-        }
-    }
-
-    protected void lockPhone(String password) {
-        mDPM.resetPassword(password, 0);
-        mDPM.lockNow();
-    }
-
-    protected void unlockPhone() {
-
-
-
-        mDPM.setPasswordQuality(mDeviceAdminSample, DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED);
-        mDPM.setPasswordMinimumLength(mDeviceAdminSample, 0);
-        mDPM.resetPassword("", DevicePolicyManager.RESET_PASSWORD_REQUIRE_ENTRY);
-
-        KeyguardManager keyguardManager = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
-        KeyguardManager.KeyguardLock lock = keyguardManager.newKeyguardLock(Context.KEYGUARD_SERVICE);
-        lock.disableKeyguard();
-
-        Worker worker = new Worker(this);
-        worker.setLocked(false);
-
-//        Intent startMain = new Intent(Intent.ACTION_MAIN);
-//        startMain.addCategory(Intent.CATEGORY_HOME);
-//        startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//        startActivity(startMain);
-
-        finish();
-    }
-
-
-
-    //
-    //    @Override
-    //    public boolean onCreateOptionsMenu(Menu menu) {
-    //        // Inflate the menu; this adds items to the action bar if it is present.
-    //        getMenuInflater().inflate(R.menu.lock_screen, menu);
-    //        return true;
-    //    }
-    //
-    //    @Override
-    //    public boolean onOptionsItemSelected(MenuItem item) {
-    //        // Handle action bar item clicks here. The action bar will
-    //        // automatically handle clicks on the Home/Up button, so long
-    //        // as you specify a parent activity in AndroidManifest.xml.
-    //        int id = item.getItemId();
-    //        if (id == R.id.action_settings) {
-    //            return true;
-    //        }
-    //        return super.onOptionsItemSelected(item);
-    //    }
-
 
     /**
      * A simple method that sets the screen to fullscreen.  It removes the Notifications bar,
@@ -148,19 +97,44 @@ public class LockScreenActivity extends WithSoundActivity {
      */
     public void makeFullScreen() {
 
-        // over lockscreen http://stackoverflow.com/questions/3629179/android-activity-over-default-lock-screen
-//        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+//        requestWindowFeature(Window.FEATURE_NO_TITLE);
+////
+////        over lockscreen http://stackoverflow.com/questions/3629179/android-activity-over-default-lock-screen
+////        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+//
+//        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+////        getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+//        getWindow().setFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON, WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+//        getWindow().setFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED, WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+////
+////        //Make us non-modal, so that others can receive touch events.
+//        getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL, WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL);
+////        //...but notify us that it happened.
+//        getWindow().setFlags(WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH, WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH);
+////
+//
+//        getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+//        getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+//        getWindow().setFormat(PixelFormat.TRANSLUCENT);
 
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-//        getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON, WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED, WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+
+        getWindow().setType(WindowManager.LayoutParams.TYPE_KEYGUARD_DIALOG);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_FULLSCREEN | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
 
 
-        // Make us non-modal, so that others can receive touch events.
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL, WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL);
-        // ...but notify us that it happened.
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH, WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH);
+//        final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+//                WindowManager.LayoutParams.FLAG_FULLSCREEN,
+//                WindowManager.LayoutParams.FLAG_FULLSCREEN,
+//                WindowManager.LayoutParams.TYPE_SYSTEM_ALERT,
+//                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+//                PixelFormat.TRANSLUCENT);
+//
+//        WindowManager wm = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
+//
+//        ViewGroup mTopView = (ViewGroup) getLayoutInflater().inflate(R.layout.activity_lock_screen, null);
+//        getWindow().setAttributes(params);
+//        wm.addView(mTopView, params);
+
 
 
 
@@ -174,6 +148,51 @@ public class LockScreenActivity extends WithSoundActivity {
 //            this.getWindow().getDecorView()
 //                    .setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE);
 //        }
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        soundOff();
+        android.os.Process.killProcess(android.os.Process.myPid());
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+
+        processIntent(intent);
+    }
+
+    protected void processIntent(Intent intent) {
+        if(intent.getExtras() != null && intent.getExtras().getBoolean("stolenMode", false)) {
+            soundOn(R.raw.stolen);
+        } else {
+            soundOff();
+        }
+    }
+
+
+//    protected void lockPhone(String password) {
+//        mDPM.resetPassword(password, 0);
+//        mDPM.lockNow();
+//    }
+
+    protected void unlockPhone() {
+
+        mDPM.setPasswordQuality(mDeviceAdminSample, DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED);
+        mDPM.setPasswordMinimumLength(mDeviceAdminSample, 0);
+        mDPM.resetPassword("", DevicePolicyManager.RESET_PASSWORD_REQUIRE_ENTRY);
+
+        KeyguardManager keyguardManager = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
+        KeyguardManager.KeyguardLock lock = keyguardManager.newKeyguardLock(Context.KEYGUARD_SERVICE);
+        lock.disableKeyguard();
+
+        worker.setLocked(false);
+
+        finish();
     }
 
     @Override
@@ -197,72 +216,65 @@ public class LockScreenActivity extends WithSoundActivity {
 
 
     public void onClickBtnCallOwner(View view) {
+
+        KeyguardManager keyguardManager = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
+        KeyguardManager.KeyguardLock lock = keyguardManager.newKeyguardLock(Context.KEYGUARD_SERVICE);
+        lock.disableKeyguard();
+
         Intent callIntent = new Intent(Intent.ACTION_CALL);
-        callIntent.setData(Uri.parse("tel:123456789"));
-        startActivity(callIntent);
+        callIntent.setData(Uri.parse("tel:" + worker.getPreferences().getString("ownerPhoneNumber", null)));
+        startActivityForResult(callIntent, 666);
+
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 666) {
+            KeyguardManager keyguardManager = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
+            KeyguardManager.KeyguardLock lock = keyguardManager.newKeyguardLock(Context.KEYGUARD_SERVICE);
+            lock.reenableKeyguard();
+        }
+
+
+    }
 
     public void onClickBtnUnlock(View view) {
         EditText editUnlock = (EditText) findViewById(R.id.editUnlock);
         String pin = editUnlock.getText().toString();
 
-
-        if (pin.equals("1234")) {
+        if (pin.equals( worker.getPreferences().getString("password", null) )) {
             unlockPhone(); // zrusi heslo
 
         } else {
-
-            Worker worker = new Worker(this);
             worker.passwordFailed();
-
             Toast.makeText(this, R.string.wrongPin, Toast.LENGTH_SHORT).show();
         }
     }
 
 
-    //
-    //    //here's where most of the magic happens
-    //    @Override
-    //    public boolean dispatchKeyEvent(KeyEvent event) {
-    //        // Do this on key down
-    //        boolean up = event.getAction() == KeyEvent.ACTION_UP;
-    //        //flags to true if the event we are getting is the up (release)
-    //        switch (event.getKeyCode()) {
-    //            //case KeyEvent.KEYCODE_VOLUME_UP:
-    //            case KeyEvent.KEYCODE_VOLUME_DOWN:
-    //            case KeyEvent.KEYCODE_FOCUS:
-    //                if (up) {
-    //                    break;//break without return means pass on to other processes
-    //                    //doesn't consume the press
-    //                }
-    //
-    //                Log.v("key event", "locked key");
-    //
-    //                return true;
-    //            //returning true means we handled the event so don't pass it to other processes
-    //
-    //            case KeyEvent.KEYCODE_CAMERA:
-    //            case KeyEvent.KEYCODE_VOLUME_UP:
-    //                Log.v("key event","wake key");
-    ////                awake = true;
-    ////                setBright((float) 0.1);//tell screen to go on with 10% brightness
-    //                return true;
-    //
-    //            case KeyEvent.KEYCODE_POWER:
-    //                Log.v("key event","unlock key");
-    //                finish();
-    //                return true;
-    //
-    //            case KeyEvent.KEYCODE_HOME:
-    //                Toast.makeText(this, "Muhehe", Toast.LENGTH_LONG).show();
-    //                return true;
-    //
-    //            default:
-    //
-    //                break;
-    //        }
-    //        return super.dispatchKeyEvent(event);
-    //    }
+    //here's where most of the magic happens
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        // Do this on key down
+        boolean up = event.getAction() == KeyEvent.ACTION_UP;
+        //flags to true if the event we are getting is the up (release)
+        switch (event.getKeyCode()) {
+            case KeyEvent.KEYCODE_VOLUME_DOWN:
+            case KeyEvent.KEYCODE_FOCUS:
+                return true;
+            case KeyEvent.KEYCODE_CAMERA:
+            case KeyEvent.KEYCODE_VOLUME_UP:
+                return true;
+            case KeyEvent.KEYCODE_POWER:
+                finish();
+                return true;
+            case KeyEvent.KEYCODE_HOME:
+                Toast.makeText(this, "Muhehe", Toast.LENGTH_LONG).show();
+                return true;
+            default:
+            break;
+        }
+        return super.dispatchKeyEvent(event);
+    }
 
 }

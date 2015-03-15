@@ -28,7 +28,7 @@
         android:layout_centerInParent="true"
         android:text="Ahooj"
         android:textColor="@color/wallet_bright_foreground_holo_dark"
-        android:id="@+id/text"
+        android:id="@+id/displayText"
         />
 
     <Button

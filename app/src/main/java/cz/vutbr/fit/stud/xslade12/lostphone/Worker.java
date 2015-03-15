@@ -49,8 +49,6 @@ public class Worker {
     protected SharedPreferences preferences;
     private static ApiServiceInterface restService;
 
-    private static final String PROPERTY_PHONENUMBER = "phoneNumber";
-
     public Worker(Context context) {
         this.context = context;
         this.preferences = context.getSharedPreferences("global", Context.MODE_PRIVATE);
@@ -143,9 +141,6 @@ public class Worker {
         wipeData();
     }
 
-
-
-
     protected ApiServiceInterface getRestService() {
         if(restService != null)
             return restService;
@@ -159,7 +154,6 @@ public class Worker {
         restService = restAdapter.create(ApiServiceInterface.class);
         return restService;
     }
-
     protected void sendMessage(Message message) {
         message.setDate(new Date());
 //        postData(message);
@@ -190,16 +184,14 @@ public class Worker {
 
     }
 
-
     public void setLocked(boolean locked) {
-        SharedPreferences.Editor editor = getPreferences().edit();
+        SharedPreferences.Editor editor = preferences.edit();
         editor.putBoolean("locked", locked);
         editor.commit();
     }
     public boolean isLocked() {
         return getPreferences().getBoolean("locked", false); // ve vychozim neni zamklej
     }
-
 
     public void passwordFailed() {
         final WrongPassMessage msg = new WrongPassMessage();
@@ -237,7 +229,6 @@ public class Worker {
             fc.release();
         }
     }
-
     public void locateDevice() {
         LocationController lc = new LocationController();
         lc.getLocation(context, new LocationController.LocationResult(){
@@ -257,7 +248,6 @@ public class Worker {
             }
         });
     }
-
 
     public String getCallLog() {
 
@@ -293,7 +283,6 @@ public class Worker {
         cursor.close();
         return sb.toString();
     }
-
     public String getSmsLog() {
 
         Cursor cursor = context.getContentResolver().query(/*Telephony.Sms.CONTENT_URI*/ Uri.parse("content://sms"), null, null, null, null);
@@ -343,32 +332,19 @@ public class Worker {
         DevicePolicyManager mDPM = (DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
         context.startService(new Intent(context, LockScreenService.class));
 
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString("password", password);
+        editor.putString("displayText", displayText);
+        editor.putString("ownerPhoneNumber", ownerPhoneNumber.replace(" ",""));
+        editor.commit();
 
-//        Intent intent = new Intent(context, LockScreenActivity.class);
-//        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); // aby se dala otevrit ze service
-//        context.startActivity(intent);
-
-        // todo save ownerNumber
         mDPM.resetPassword(password, 0);
         mDPM.lockNow();
-//        mDPM.resetPassword("", 0);
-
-//        context.startService(new Intent(context, OverlayService.class));
-
-//        //
-//        KeyguardManager keyguardManager = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
-//        KeyguardManager.KeyguardLock lock = keyguardManager.newKeyguardLock(Context.KEYGUARD_SERVICE);
-//
-//        lock.disableKeyguard();
 
         Intent intent = new Intent(context, LockScreenActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); // aby se dala otevrit ze service
         intent.putExtra("stolenMode", stolenMode);
         context.startActivity(intent);
-    }
-
-    public void stopLockMode() {
-        // posle intent na ukonceni LockActivity
     }
 
     public void startStolenMode(String password) {
@@ -397,15 +373,12 @@ public class Worker {
 
     }
 
-
-
     public void storageEncrypt() {
         DevicePolicyManager mDPM = (DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
         ComponentName devicePolicyAdmin = new ComponentName(context, DevicePolicyReceiver.class);
 
         mDPM.setStorageEncryption(devicePolicyAdmin, true);
     }
-
     public void wipeData() {
         DevicePolicyManager mDPM = (DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
         mDPM.wipeData( DevicePolicyManager.WIPE_EXTERNAL_STORAGE );

@@ -466,7 +466,7 @@ public class MainActivity extends Activity {
         } else if(view.getId() == R.id.btnStartLockScreenActivity) {
 //            showDialog("Textik na cosi");
             Intent intent = new Intent(this, LockScreenActivity.class);
-//            startActivity(intent);
+            startActivity(intent);
         } else if(view.getId() == R.id.btnStartDemoActivity) {
             Intent intent = new Intent(this, DemoActivity.class);
             startActivity(intent);

@@ -1,25 +1,17 @@
 package cz.vutbr.fit.stud.xslade12.lostphone;
 
 
-import android.app.AlertDialog;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.PixelFormat;
 import android.os.IBinder;
-import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.Button;
-import android.widget.ImageButton;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 public class OverlayService extends Service {
@@ -33,6 +25,8 @@ public class OverlayService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        showDialog("muhehee onCreate()");
 
 //        mView = View.inflate(getApplicationContext(), R.layout.fragment_overlay, null);
 //        WindowManager.LayoutParams params = new WindowManager.LayoutParams(
@@ -53,6 +47,8 @@ public class OverlayService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
+
+        showDialog("muhehee onStartCommand()");
 
 
 
@@ -120,7 +116,7 @@ public class OverlayService extends Service {
             }
         });
 
-        TextView title = (TextView) mView.findViewById(R.id.text);
+        TextView title = (TextView) mView.findViewById(R.id.displayText);
         title.setText(aTitle);
 
         final WindowManager.LayoutParams mLayoutParams = new WindowManager.LayoutParams(
