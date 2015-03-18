@@ -57,34 +57,33 @@ public class DevicePolicyReceiver extends DeviceAdminReceiver {
         final Worker worker = new Worker(context);
         worker.passwordFailed();
 
-        Toast.makeText(context, "Password failed", Toast.LENGTH_SHORT).show();
+//        Toast.makeText(context, "Password failed", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onPasswordSucceeded(Context context, Intent intent) {
 
-        UnlockMessage msg = new UnlockMessage();
-        Worker worker = new Worker(context);
-        worker.sendMessage(msg);
-        worker.setLocked(false);
 
-        Toast.makeText(context, "Access Granted", Toast.LENGTH_SHORT).show();
+        Worker worker = new Worker(context);
+        worker.passwordSuccess();
+
+//        Toast.makeText(context, "Access Granted", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onLockTaskModeEntering(Context context, Intent intent, String pkg) {
-        Toast.makeText(context, "LockTaskModeEntering", Toast.LENGTH_SHORT).show();
+//        Toast.makeText(context, "LockTaskModeEntering", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onLockTaskModeExiting(Context context, Intent intent) {
 //        super.onLockTaskModeExiting(context, intent);
-        Toast.makeText(context, "LockTaskModeExiting", Toast.LENGTH_SHORT).show();
+//        Toast.makeText(context, "LockTaskModeExiting", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.i(LOG_TAG, "MyDevicePolicyReciever Received: " + intent.getAction());
+//        Log.i(LOG_TAG, "MyDevicePolicyReciever Received: " + intent.getAction());
         super.onReceive(context, intent);
     }
 }

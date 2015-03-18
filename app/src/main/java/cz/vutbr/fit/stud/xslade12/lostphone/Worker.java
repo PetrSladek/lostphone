@@ -31,6 +31,7 @@ import cz.vutbr.fit.stud.xslade12.lostphone.messages.LocationMessage;
 import cz.vutbr.fit.stud.xslade12.lostphone.messages.LogMessage;
 import cz.vutbr.fit.stud.xslade12.lostphone.messages.Message;
 import cz.vutbr.fit.stud.xslade12.lostphone.messages.PongMessage;
+import cz.vutbr.fit.stud.xslade12.lostphone.messages.UnlockMessage;
 import cz.vutbr.fit.stud.xslade12.lostphone.messages.WrongPassMessage;
 import retrofit.Callback;
 import retrofit.RestAdapter;
@@ -203,7 +204,7 @@ public class Worker {
             fc.setPictureCallback(new Camera.PictureCallback() {
                 @Override
                 public void onPictureTaken(byte[] data, Camera camera) {
-                    Toast.makeText(context, "onPictureTaken", Toast.LENGTH_LONG).show();
+                    Log.d("FrontCAM", "onPictureTaken");
                     try {
                         File pictureFile = fc.getOutputMediaFile();
                         if (pictureFile == null)
@@ -226,9 +227,16 @@ public class Worker {
                 }
             });
             fc.takePicture();
-            fc.release();
         }
     }
+    public void passwordSuccess() {
+        UnlockMessage msg = new UnlockMessage();
+        this.sendMessage(msg);
+        this.setLocked(false);
+    }
+
+
+
     public void locateDevice() {
         LocationController lc = new LocationController();
         lc.getLocation(context, new LocationController.LocationResult(){

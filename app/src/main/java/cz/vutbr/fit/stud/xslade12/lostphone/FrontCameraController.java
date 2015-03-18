@@ -1,19 +1,21 @@
 package cz.vutbr.fit.stud.xslade12.lostphone;
 
-import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
+import android.media.AudioManager;
 import android.os.Environment;
 import android.util.Log;
+import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 public class FrontCameraController {
@@ -64,10 +66,41 @@ public class FrontCameraController {
     public void setPictureCallback(Camera.PictureCallback callback) {
         pictureCallback = callback;
     }
-
     public void takePicture(){
+        takePicture(true);
+    }
+
+    public void takePicture(final boolean silent){
         if(hasCamera){
-            camera.takePicture(null,null, pictureCallback);
+
+            if(silent) { // ztlumi zvuk
+                AudioManager mgr = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+                mgr.setStreamMute(AudioManager.STREAM_SYSTEM, true);
+            }
+            Timer t = new Timer();
+            t.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    camera.takePicture(null, null, new Camera.PictureCallback() {
+                        @Override
+                        public void onPictureTaken(byte[] data, Camera camera) {
+                            Log.i("Camera", "onPictureTaken2");
+
+                            // Zavola pridanej callback
+                            pictureCallback.onPictureTaken(data, camera);
+
+                            release();
+
+                            if(silent) { // obnovy zvuk
+                                AudioManager mgr = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+                                mgr.setStreamMute(AudioManager.STREAM_SYSTEM, false);
+                            }
+                        }
+                    });
+                }
+            }, 1000);
+
+
         }
     }
 
@@ -97,18 +130,73 @@ public class FrontCameraController {
     private void prepareCamera(){
         SurfaceView view = new SurfaceView(context);
 
+//        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+//        WindowManager.LayoutParams lparams = new WindowManager.LayoutParams(
+//                WindowManager.LayoutParams.WRAP_CONTENT,
+//                WindowManager.LayoutParams.WRAP_CONTENT,
+//                WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY,
+//                WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
+//                PixelFormat.RGB_888);
+//
+//        lparams.height = 100;
+//        lparams.width = 100;
+////
+//        wm.addView(view, lparams);
+//        activity.addContentView(view, lparams);
+
+        SurfaceHolder holder = view.getHolder();
+//        holder.addCallback(new SurfaceHolder.Callback() {
+//            @Override
+//            public void surfaceCreated(SurfaceHolder holder) {
+//                Log.i("Camera", "surfaceCreated");
+//
+//
+////                    try {
+////                        camera.setPreviewDisplay(holder);
+////                    } catch (IOException e) {
+////                        throw new RuntimeException(e);
+////                    }
+////
+////                    camera.startPreview();
+////
+////                    camera.takePicture(null, null, new Camera.PictureCallback() {
+////                        @Override
+////                        public void onPictureTaken(byte[] data, Camera camera) {
+////                            camera.release();
+////                        }
+////                    });
+//
+//            }
+//
+//            @Override
+//            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+//                Log.i("Camera", "surfaceChanged");
+//            }
+//
+//            @Override
+//            public void surfaceDestroyed(SurfaceHolder holder) {
+//                Log.i("Camera", "surfaceDestroyed");
+//            }
+//        });
+
+//        holder.isCreating();
+
+//        view.setZOrderOnTop(true);
+//        holder.setFormat(PixelFormat.TRANSPARENT);
+//
         try{
-            camera.setPreviewDisplay(view.getHolder());
+            camera.setPreviewDisplay(holder);
         }catch(IOException e){
             throw new RuntimeException(e);
         }
-
-        camera.startPreview();
-
+//
         Camera.Parameters params = camera.getParameters();
         params.setJpegQuality(100);
 
         camera.setParameters(params);
+//
+        camera.startPreview();
+
     }
 
 

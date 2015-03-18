@@ -22,7 +22,6 @@ public class LockScreenActivity extends WithSoundActivity {
 
     DevicePolicyManager mDPM;
     ComponentName mDeviceAdminSample;
-
     Worker worker;
 
     @Override
@@ -156,7 +155,6 @@ public class LockScreenActivity extends WithSoundActivity {
         super.onDestroy();
 
         soundOff();
-        android.os.Process.killProcess(android.os.Process.myPid());
     }
 
     @Override
@@ -174,12 +172,6 @@ public class LockScreenActivity extends WithSoundActivity {
         }
     }
 
-
-//    protected void lockPhone(String password) {
-//        mDPM.resetPassword(password, 0);
-//        mDPM.lockNow();
-//    }
-
     protected void unlockPhone() {
 
         mDPM.setPasswordQuality(mDeviceAdminSample, DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED);
@@ -190,23 +182,24 @@ public class LockScreenActivity extends WithSoundActivity {
         KeyguardManager.KeyguardLock lock = keyguardManager.newKeyguardLock(Context.KEYGUARD_SERVICE);
         lock.disableKeyguard();
 
-        worker.setLocked(false);
+        worker.passwordSuccess();
 
+//        android.os.Process.killProcess(android.os.Process.myPid());
         finish();
     }
 
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        // If we've received a touch notification that the user has touched
-        // outside the app, finish the activity.
-        if (MotionEvent.ACTION_OUTSIDE == event.getAction()) {
-//            finish();
-            return true;
-        }
-
-        // Delegate everything else to Activity.
-        return super.onTouchEvent(event);
-    }
+//    @Override
+//    public boolean onTouchEvent(MotionEvent event) {
+//        // If we've received a touch notification that the user has touched
+//        // outside the app, finish the activity.
+//        if (MotionEvent.ACTION_OUTSIDE == event.getAction()) {
+////            finish();
+//            return true;
+//        }
+//
+//        // Delegate everything else to Activity.
+//        return super.onTouchEvent(event);
+//    }
 
     @Override
     public void onBackPressed() {
@@ -243,11 +236,14 @@ public class LockScreenActivity extends WithSoundActivity {
         String pin = editUnlock.getText().toString();
 
         if (pin.equals( worker.getPreferences().getString("password", null) )) {
+
             unlockPhone(); // zrusi heslo
 
         } else {
             worker.passwordFailed();
-            Toast.makeText(this, R.string.wrongPin, Toast.LENGTH_SHORT).show();
+
+            editUnlock.setText(""); // vymaze input s pinem
+            Toast.makeText(this, R.string.wrongPin, Toast.LENGTH_LONG).show();
         }
     }
 
@@ -269,7 +265,6 @@ public class LockScreenActivity extends WithSoundActivity {
                 finish();
                 return true;
             case KeyEvent.KEYCODE_HOME:
-                Toast.makeText(this, "Muhehe", Toast.LENGTH_LONG).show();
                 return true;
             default:
             break;
