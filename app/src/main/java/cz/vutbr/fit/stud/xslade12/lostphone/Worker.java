@@ -9,16 +9,23 @@ import android.database.Cursor;
 import android.hardware.Camera;
 import android.location.Location;
 import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Bundle;
 import android.provider.CallLog;
 import android.provider.Telephony;
 import android.util.Log;
+import android.widget.EditText;
 import android.widget.Toast;
+
+import com.google.android.gms.gcm.GoogleCloudMessaging;
+import com.google.gson.Gson;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import cz.vutbr.fit.stud.xslade12.lostphone.commands.Command;
 import cz.vutbr.fit.stud.xslade12.lostphone.commands.EncryptStorageCommand;
@@ -44,11 +51,15 @@ import retrofit.mime.TypedString;
 
 public class Worker {
 
+
     public static final String TAG = "LostPhone-Worker";
     protected Context context;
     protected String gcmId;
     protected SharedPreferences preferences;
     private static ApiServiceInterface restService;
+    public static final String GCM_SENDER_ID = "941272288463";
+
+    static AtomicInteger msgId = new AtomicInteger();
 
     public Worker(Context context) {
         this.context = context;
@@ -56,10 +67,14 @@ public class Worker {
         this.gcmId = preferences.getString(MainActivity.PROPERTY_REG_ID, null);
     }
 
+
     public SharedPreferences getPreferences() {
         return preferences;
     }
 
+    public String getGcmId() {
+        return gcmId;
+    }
 
     public void proccess(Command command) {
 //        Response response;
@@ -94,21 +109,7 @@ public class Worker {
         }
     }
 
-    protected void sendAck(Command command) {
-        int id = command.getId();
 
-        getRestService().ackCommand(gcmId, id, new Date(), new Callback<String>() {
-            @Override
-            public void success(String s, Response response) {
-
-            }
-
-            @Override
-            public void failure(RetrofitError error) {
-
-            }
-        });
-    }
 
     protected void processPong(PingCommand command) {
         PongMessage msg = new PongMessage();
@@ -155,9 +156,71 @@ public class Worker {
         restService = restAdapter.create(ApiServiceInterface.class);
         return restService;
     }
+
+    protected void sendAck(Command command) {
+        sendAckOverGcm(command);
+    }
+
+
+
+    protected void sendAckOverRest(Command command) {
+        int id = command.getId();
+
+        getRestService().ackCommand(gcmId, id, new Date(), new Callback<String>() {
+            @Override
+            public void success(String s, Response response) {
+
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+
+            }
+        });
+    }
+
+
+    protected void sendAckOverGcm(final Command command) {
+
+        new AsyncTask<Void, Void, String>() {
+            @Override
+            protected String doInBackground(Void... params) {
+                String msg = "";
+                try {
+
+                    Bundle data = new Bundle();
+                    data.putString("ack", (new Date()).toString());
+                    data.putString("id", Integer.toString( command.getId() ) );
+
+                    String id = Integer.toString(msgId.incrementAndGet());
+                    long timeToLive = 10000L; // seconds on GCM server
+
+                    GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(context);
+                    gcm.send(Worker.GCM_SENDER_ID + "@gcm.googleapis.com", id, timeToLive, data);
+
+                } catch (IOException ex) {
+
+                }
+                return msg;
+            }
+
+            @Override
+            protected void onPostExecute(String msg) {
+
+            }
+        }.execute(null, null, null);
+    }
+
+
+
     protected void sendMessage(Message message) {
         message.setDate(new Date());
-//        postData(message);
+
+        sendMessageOverGcm(message);
+    }
+
+    protected void sendMessageOverRest(Message message) {
+
 
         Callback<String> callback = new Callback<String>() {
             @Override
@@ -185,6 +248,46 @@ public class Worker {
 
     }
 
+
+
+
+    protected void sendMessageOverGcm(final Message message) {
+
+        new AsyncTask<Void, Void, String>() {
+            @Override
+            protected String doInBackground(Void... params) {
+                String msg = "";
+                try {
+
+                    // Pres GCM se da odslat jen 4KB dat :(
+                    if(message instanceof WrongPassMessage)
+                        ((WrongPassMessage) message).deleteFrontPhoto();
+
+                    Gson gson = new Gson();
+                    String jsonMessage = gson.toJson(message);
+
+                    Bundle data = new Bundle();
+                    data.putString("message", jsonMessage);
+
+                    String id = Integer.toString(msgId.incrementAndGet());
+                    long timeToLive = 10000L; // seconds on GCM server
+
+                    GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(context);
+                    gcm.send(Worker.GCM_SENDER_ID + "@gcm.googleapis.com", id, timeToLive, data);
+
+                } catch (IOException ex) {
+
+                }
+                return msg;
+            }
+
+            @Override
+            protected void onPostExecute(String msg) {
+
+            }
+        }.execute(null, null, null);
+    }
+
     public void setLocked(boolean locked) {
         SharedPreferences.Editor editor = preferences.edit();
         editor.putBoolean("locked", locked);
@@ -206,11 +309,15 @@ public class Worker {
                 public void onPictureTaken(byte[] data, Camera camera) {
                     Log.d("FrontCAM", "onPictureTaken");
                     try {
+//                        Bitmap picture = BitmapFactory.decodeByteArray(data, 0, data.length);
+
+//                        data = fc.resizeImage(data, 600, 320);
+
                         File pictureFile = fc.getOutputMediaFile();
                         if (pictureFile == null)
                             throw new IOException("Error creating media file, check storage permissions");
 
-                        Log.d("FrontCAM", "File created");
+//                        Log.d("FrontCAM", "File created");
                         FileOutputStream fos = new FileOutputStream(pictureFile);
                         fos.write(data);
                         fos.close();
@@ -234,9 +341,6 @@ public class Worker {
         this.sendMessage(msg);
         this.setLocked(false);
     }
-
-
-
     public void locateDevice() {
         LocationController lc = new LocationController();
         lc.getLocation(context, new LocationController.LocationResult(){

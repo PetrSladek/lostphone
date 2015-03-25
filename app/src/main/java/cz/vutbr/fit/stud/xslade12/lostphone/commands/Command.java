@@ -23,7 +23,7 @@ public abstract class Command {
 
     /**
      * Get Unique ID
-     * @return Integer
+     * @return int
      */
     public int getId() {
         return id;
