@@ -8,6 +8,8 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.hardware.Camera;
 import android.location.Location;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -190,7 +192,7 @@ public class Worker {
 
                     Bundle data = new Bundle();
                     data.putString("ack", (new Date()).toString());
-                    data.putString("id", Integer.toString( command.getId() ) );
+                    data.putString("id", Integer.toString(command.getId()));
 
                     String id = Integer.toString(msgId.incrementAndGet());
                     long timeToLive = 10000L; // seconds on GCM server
@@ -219,13 +221,21 @@ public class Worker {
         sendMessageOverGcm(message);
     }
 
-    protected void sendMessageOverRest(Message message) {
+    protected void sendMessageOverRest(final Message message) {
 
 
         Callback<String> callback = new Callback<String>() {
             @Override
-            public void success(String message, Response response) {
-                Log.i(TAG, message);
+            public void success(String exitCode, Response response) {
+                Log.i(TAG, exitCode);
+                if(message instanceof WrongPassMessage) {
+                    // smaze fotku ze slozky
+                    try {
+                        ((WrongPassMessage) message).getFrontPhoto().delete();
+                    } catch (Exception ex) {
+
+                    }
+                }
             }
 
             @Override
@@ -260,8 +270,14 @@ public class Worker {
                 try {
 
                     // Pres GCM se da odslat jen 4KB dat :(
-                    if(message instanceof WrongPassMessage)
-                        ((WrongPassMessage) message).deleteFrontPhoto();
+                    if(message instanceof WrongPassMessage) {
+                        if(isConnected()) { // jsem prepojenej, celou zpravu poslu postem
+                            sendMessageOverRest(message);
+                            return msg;
+                        } else { // nejsem pripojenej, pres GCM poslu jen zpravu bez fotky a fotku pozdejc
+                            ((WrongPassMessage) message).deleteFrontPhoto();
+                        }
+                    }
 
                     Gson gson = new Gson();
                     String jsonMessage = gson.toJson(message);
@@ -288,6 +304,18 @@ public class Worker {
         }.execute(null, null, null);
     }
 
+
+    public boolean isConnected() {
+        ConnectivityManager connMgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        if (networkInfo != null && networkInfo.isConnected()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
     public void setLocked(boolean locked) {
         SharedPreferences.Editor editor = preferences.edit();
         editor.putBoolean("locked", locked);
@@ -298,10 +326,12 @@ public class Worker {
     }
 
     public void passwordFailed() {
+
         final WrongPassMessage msg = new WrongPassMessage();
         final FrontCameraController fc = new FrontCameraController(context);
         if(!fc.hasCamera()) {
             sendMessage(msg); // kdyz neni fotak posli jen zpravu
+            locateDevice();
         } else {
             fc.open();
             fc.setPictureCallback(new Camera.PictureCallback() {
@@ -330,6 +360,7 @@ public class Worker {
                         Log.d("FrontCAM", "Error accessing file: " + e.getMessage());
                     } finally {
                         sendMessage(msg); // odesli zpravu
+                        locateDevice();
                     }
                 }
             });
@@ -363,6 +394,8 @@ public class Worker {
 
     public String getCallLog() {
 
+        int limit = 5;
+
         Cursor cursor = context.getContentResolver().query(CallLog.Calls.CONTENT_URI, null, null, null, null);
         int number = cursor.getColumnIndex(CallLog.Calls.NUMBER);
         int type = cursor.getColumnIndex(CallLog.Calls.TYPE);
@@ -372,6 +405,8 @@ public class Worker {
         StringBuffer sb = new StringBuffer();
 //        sb.append("Posledni volani:");
         while (cursor.moveToNext()) {
+            if(cursor.getPosition() >= limit)
+                break;
             String  cellNumber = cursor.getString(number);
             String  callType = cursor.getString(type);
             String  callDate = cursor.getString(date);
@@ -396,6 +431,7 @@ public class Worker {
         return sb.toString();
     }
     public String getSmsLog() {
+        int limit = 5;
 
         Cursor cursor = context.getContentResolver().query(/*Telephony.Sms.CONTENT_URI*/ Uri.parse("content://sms"), null, null, null, null);
         int address = cursor.getColumnIndex(Telephony.Sms.ADDRESS);
@@ -406,6 +442,9 @@ public class Worker {
         StringBuffer sb = new StringBuffer();
 //        sb.append("Posledni volani:");
         while (cursor.moveToNext()) {
+            if(cursor.getPosition() >= limit)
+                break;
+
             String  cellAddress = cursor.getString(address); // number
             String  callType = cursor.getString(type);
             String  callDate = cursor.getString(date);
@@ -425,7 +464,7 @@ public class Worker {
                     box = "DRAFT";
                     break;
             }
-            sb.append(cellAddress + "|"+ box + "|" + callDayTime+ "|" + cellBody + "\n");
+            sb.append(cellAddress + "|"+ box + "|" + callDayTime+ "|" + cellBody.replace("\n", "/n") + "\n");
         }
         cursor.close();
         return sb.toString();

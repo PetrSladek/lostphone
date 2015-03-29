@@ -304,7 +304,7 @@ public class MainActivity extends Activity {
     private void sendRegistrationIdToBackend() {
 
         System.out.println("RegID: " + regid);
-        this.setTitle(regid);
+//        this.setTitle(regid);
 
 
         AccountManager manager = (AccountManager) getSystemService(ACCOUNT_SERVICE);

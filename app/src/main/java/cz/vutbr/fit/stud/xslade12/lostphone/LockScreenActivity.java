@@ -17,6 +17,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 
 public class LockScreenActivity extends WithSoundActivity {
 
@@ -184,8 +187,15 @@ public class LockScreenActivity extends WithSoundActivity {
 
         worker.passwordSuccess();
 
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                LockScreenActivity.this.finish();
+            }
+        }, 2000);
+
 //        android.os.Process.killProcess(android.os.Process.myPid());
-        finish();
     }
 
 //    @Override
