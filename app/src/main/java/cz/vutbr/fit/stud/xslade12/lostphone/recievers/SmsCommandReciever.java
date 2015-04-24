@@ -1,10 +1,12 @@
-package cz.vutbr.fit.stud.xslade12.lostphone;
+package cz.vutbr.fit.stud.xslade12.lostphone.recievers;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
+
+import cz.vutbr.fit.stud.xslade12.lostphone.Worker;
 
 /**
  * Created by Peggy on 14.3.2015.

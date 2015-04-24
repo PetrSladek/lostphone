@@ -1,4 +1,4 @@
-package cz.vutbr.fit.stud.xslade12.lostphone;
+package cz.vutbr.fit.stud.xslade12.lostphone.activities;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;

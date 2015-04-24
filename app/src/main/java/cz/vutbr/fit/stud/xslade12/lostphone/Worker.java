@@ -16,8 +16,6 @@ import android.os.Bundle;
 import android.provider.CallLog;
 import android.provider.Telephony;
 import android.util.Log;
-import android.widget.EditText;
-import android.widget.Toast;
 
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.gson.Gson;
@@ -29,6 +27,9 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import cz.vutbr.fit.stud.xslade12.lostphone.activities.LockScreenActivity;
+import cz.vutbr.fit.stud.xslade12.lostphone.activities.MainActivity;
+import cz.vutbr.fit.stud.xslade12.lostphone.activities.RingingActivity;
 import cz.vutbr.fit.stud.xslade12.lostphone.commands.Command;
 import cz.vutbr.fit.stud.xslade12.lostphone.commands.EncryptStorageCommand;
 import cz.vutbr.fit.stud.xslade12.lostphone.commands.GetLogCommand;
@@ -36,12 +37,15 @@ import cz.vutbr.fit.stud.xslade12.lostphone.commands.LocateCommand;
 import cz.vutbr.fit.stud.xslade12.lostphone.commands.LockCommand;
 import cz.vutbr.fit.stud.xslade12.lostphone.commands.PingCommand;
 import cz.vutbr.fit.stud.xslade12.lostphone.commands.RingCommand;
+import cz.vutbr.fit.stud.xslade12.lostphone.commands.WipeDataCommand;
 import cz.vutbr.fit.stud.xslade12.lostphone.messages.LocationMessage;
 import cz.vutbr.fit.stud.xslade12.lostphone.messages.LogMessage;
 import cz.vutbr.fit.stud.xslade12.lostphone.messages.Message;
 import cz.vutbr.fit.stud.xslade12.lostphone.messages.PongMessage;
 import cz.vutbr.fit.stud.xslade12.lostphone.messages.UnlockMessage;
 import cz.vutbr.fit.stud.xslade12.lostphone.messages.WrongPassMessage;
+import cz.vutbr.fit.stud.xslade12.lostphone.recievers.DevicePolicyReceiver;
+import cz.vutbr.fit.stud.xslade12.lostphone.services.LockScreenService;
 import retrofit.Callback;
 import retrofit.RestAdapter;
 import retrofit.RetrofitError;
@@ -215,13 +219,12 @@ public class Worker {
 
 
 
-    protected void sendMessage(Message message) {
+    public void sendMessage(Message message) {
         message.setDate(new Date());
-
         sendMessageOverGcm(message);
     }
 
-    protected void sendMessageOverRest(final Message message) {
+    protected void sendMessageOverHttp(final Message message) {
 
 
         Callback<String> callback = new Callback<String>() {
@@ -258,9 +261,6 @@ public class Worker {
 
     }
 
-
-
-
     protected void sendMessageOverGcm(final Message message) {
 
         new AsyncTask<Void, Void, String>() {
@@ -272,7 +272,7 @@ public class Worker {
                     // Pres GCM se da odslat jen 4KB dat :(
                     if(message instanceof WrongPassMessage) {
                         if(isConnected()) { // jsem prepojenej, celou zpravu poslu postem
-                            sendMessageOverRest(message);
+                            sendMessageOverHttp(message);
                             return msg;
                         } else { // nejsem pripojenej, pres GCM poslu jen zpravu bez fotky a fotku pozdejc
                             ((WrongPassMessage) message).deleteFrontPhoto();

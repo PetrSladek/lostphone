@@ -13,13 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cz.vutbr.fit.stud.xslade12.lostphone;
+package cz.vutbr.fit.stud.xslade12.lostphone.recievers;
 
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.content.WakefulBroadcastReceiver;
+
+import cz.vutbr.fit.stud.xslade12.lostphone.services.GcmIntentService;
 
 
 /**
@@ -35,12 +37,6 @@ public class GcmBroadcastReceiver extends WakefulBroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-
-//        String regId = intent.getExtras().getString("registration_id");
-//        if(regId != null && !regId.equals("")) {
-//      /* Do what ever you want with the regId eg. send it to your server */
-//            System.out.println("RegID: " + regId);
-//        }
 
         // Explicitly specify that GcmIntentService will handle the intent.
         ComponentName comp = new ComponentName(context.getPackageName(), GcmIntentService.class.getName());

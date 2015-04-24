@@ -1,17 +1,11 @@
-package cz.vutbr.fit.stud.xslade12.lostphone;
+package cz.vutbr.fit.stud.xslade12.lostphone.activities;
 
-import android.app.Activity;
-import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
-import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.hardware.Camera;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.view.View;
@@ -22,9 +16,10 @@ import android.widget.Toast;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import cz.vutbr.fit.stud.xslade12.lostphone.R;
+import cz.vutbr.fit.stud.xslade12.lostphone.Worker;
 import cz.vutbr.fit.stud.xslade12.lostphone.messages.GotchaMessage;
 import cz.vutbr.fit.stud.xslade12.lostphone.messages.RingingTimeoutMessage;
-import cz.vutbr.fit.stud.xslade12.lostphone.messages.UnlockMessage;
 
 
 public class RingingActivity extends WithSoundActivity {

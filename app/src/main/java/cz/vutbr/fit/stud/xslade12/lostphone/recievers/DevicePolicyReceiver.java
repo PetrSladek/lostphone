@@ -1,4 +1,4 @@
-package cz.vutbr.fit.stud.xslade12.lostphone;
+package cz.vutbr.fit.stud.xslade12.lostphone.recievers;
 
 import android.annotation.TargetApi;
 import android.app.admin.DeviceAdminReceiver;
@@ -16,6 +16,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import cz.vutbr.fit.stud.xslade12.lostphone.Worker;
 import cz.vutbr.fit.stud.xslade12.lostphone.messages.UnlockMessage;
 import cz.vutbr.fit.stud.xslade12.lostphone.messages.WrongPassMessage;
 

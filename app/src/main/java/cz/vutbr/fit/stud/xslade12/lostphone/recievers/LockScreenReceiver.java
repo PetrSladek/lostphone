@@ -1,11 +1,11 @@
-package cz.vutbr.fit.stud.xslade12.lostphone;
+package cz.vutbr.fit.stud.xslade12.lostphone.recievers;
 
-import android.app.admin.DevicePolicyManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.widget.Toast;
+
+import cz.vutbr.fit.stud.xslade12.lostphone.activities.LockScreenActivity;
+import cz.vutbr.fit.stud.xslade12.lostphone.Worker;
 
 public class LockScreenReceiver extends BroadcastReceiver {
     @Override

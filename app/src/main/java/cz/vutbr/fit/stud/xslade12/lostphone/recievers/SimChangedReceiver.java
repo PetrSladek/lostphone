@@ -1,4 +1,4 @@
-package cz.vutbr.fit.stud.xslade12.lostphone;
+package cz.vutbr.fit.stud.xslade12.lostphone.recievers;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import cz.vutbr.fit.stud.xslade12.lostphone.Worker;
 import cz.vutbr.fit.stud.xslade12.lostphone.messages.SimStateChangedMessage;
 
 /**

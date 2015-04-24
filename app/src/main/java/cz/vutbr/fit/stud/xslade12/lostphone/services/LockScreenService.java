@@ -1,13 +1,12 @@
-package cz.vutbr.fit.stud.xslade12.lostphone;
+package cz.vutbr.fit.stud.xslade12.lostphone.services;
 
-import android.app.KeyguardManager;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.IBinder;
-import android.util.Log;
-import android.view.KeyEvent;
+
+import cz.vutbr.fit.stud.xslade12.lostphone.recievers.LockScreenReceiver;
 
 public class LockScreenService extends Service {
 

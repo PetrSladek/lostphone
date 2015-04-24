@@ -1,4 +1,4 @@
-package cz.vutbr.fit.stud.xslade12.lostphone;
+package cz.vutbr.fit.stud.xslade12.lostphone.activities;
 
 import android.app.KeyguardManager;
 import android.app.admin.DevicePolicyManager;
@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.KeyEvent;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
@@ -19,6 +18,10 @@ import android.widget.Toast;
 
 import java.util.Timer;
 import java.util.TimerTask;
+
+import cz.vutbr.fit.stud.xslade12.lostphone.R;
+import cz.vutbr.fit.stud.xslade12.lostphone.Worker;
+import cz.vutbr.fit.stud.xslade12.lostphone.recievers.DevicePolicyReceiver;
 
 
 public class LockScreenActivity extends WithSoundActivity {
@@ -69,9 +72,6 @@ public class LockScreenActivity extends WithSoundActivity {
 
         setContentView(R.layout.activity_lock_screen);
 
-        String text = worker.getPreferences().getString("displayText", null);
-        TextView textView = (TextView) findViewById(R.id.displayText);
-        textView.setText( text );
 
         // your text box
         EditText editUnlock = (EditText) findViewById(R.id.editUnlock);
@@ -173,6 +173,10 @@ public class LockScreenActivity extends WithSoundActivity {
         } else {
             soundOff();
         }
+
+        String text = worker.getPreferences().getString("displayText", null);
+        TextView textView = (TextView) findViewById(R.id.displayText);
+        textView.setText( text );
     }
 
     protected void unlockPhone() {

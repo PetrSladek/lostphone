@@ -2,8 +2,6 @@ package cz.vutbr.fit.stud.xslade12.lostphone.commands;
 
 import android.os.Bundle;
 
-import cz.vutbr.fit.stud.xslade12.lostphone.WipeDataCommand;
-
 
 public abstract class Command {
 

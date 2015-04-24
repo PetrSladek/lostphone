@@ -1,4 +1,4 @@
-package cz.vutbr.fit.stud.xslade12.lostphone;
+package cz.vutbr.fit.stud.xslade12.lostphone.activities;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -20,8 +20,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
+import android.widget.Button;
 
 
 import com.google.android.gms.common.ConnectionResult;
@@ -30,15 +29,18 @@ import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 import java.io.IOException;
 
+import cz.vutbr.fit.stud.xslade12.lostphone.R;
+import cz.vutbr.fit.stud.xslade12.lostphone.Worker;
 import cz.vutbr.fit.stud.xslade12.lostphone.messages.RegistrationMessage;
+import cz.vutbr.fit.stud.xslade12.lostphone.recievers.DevicePolicyReceiver;
 
 
 public class MainActivity extends Activity {
 
     DevicePolicyManager devicePolicyManager;
     ComponentName devicePolicyAdmin;
-    private CheckBox checkBoxDevicePolicyEnabled;
-    private CheckBox checkBoxGCMRegistered;
+    private Button btnDeviceAdminToggle;
+    private Button btnGcmRegistrationToggle;
 
     protected static final int REQUEST_ENABLE = 1;
 
@@ -52,10 +54,11 @@ public class MainActivity extends Activity {
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
 
-    // https://console.developers.google.com/
     /**
      * Substitute you own sender ID here. This is the project number you got
      * from the API Console, as described in "Getting Started."
+     *
+     * From https://console.developers.google.com/
      */
     String SENDER_ID = "941272288463";
 
@@ -74,8 +77,37 @@ public class MainActivity extends Activity {
         devicePolicyManager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
         devicePolicyAdmin = new ComponentName(this, DevicePolicyReceiver.class);
 
-        checkBoxDevicePolicyEnabled = (CheckBox) findViewById(R.id.checkBoxDevicePolicyEnabled);
-        checkBoxGCMRegistered = (CheckBox) findViewById(R.id.checkBoxGCMRegistered);
+        btnDeviceAdminToggle = (Button) findViewById(R.id.btnDeviceAdminToggle);
+        btnGcmRegistrationToggle = (Button) findViewById(R.id.btnGcmRegistrationToggle);
+
+        btnDeviceAdminToggle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isMyDevicePolicyReceiverActive()) {
+                    // deaktivuju devide admin
+                    devicePolicyManager.removeActiveAdmin(devicePolicyAdmin);
+//                    refreshDeviceAdminEnabled();
+                    btnDeviceAdminToggle.setText(R.string.btnDeviceAdminEnabled);
+                } else {
+                    // Aktivovat device admin
+                    Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
+                    intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, devicePolicyAdmin);
+                    intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, getString(R.string.admin_explanation));
+                    startActivityForResult(intent, REQUEST_ENABLE);
+                }
+            }
+        });
+        btnGcmRegistrationToggle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(isGCMRegistered()) {
+                    unregisterGCMInBackground();
+                } else {
+                    registerGCMInBackground();
+                }
+            }
+        });
+
 
         // Check device for Play Services APK. If check succeeds, proceed with GCM registration.
         if (checkPlayServices()) {
@@ -235,10 +267,9 @@ public class MainActivity extends Activity {
      * shared preferences.
      */
     private void registerGCMInBackground() {
-        new AsyncTask<Void, Void, String>() {
+        new AsyncTask<Void, Void, Void>() {
             @Override
-            protected String doInBackground(Void... params) {
-                String msg = "";
+            protected Void doInBackground(Void... params) {
                 try {
                     if (gcm == null) {
                         gcm = GoogleCloudMessaging.getInstance(MainActivity.this);
@@ -267,14 +298,45 @@ public class MainActivity extends Activity {
                     // exponential back-off.
                 }
 
-                return msg;
+                return null;
             }
 
             @Override
-            protected void onPostExecute(String msg) {
+            protected void onPostExecute(Void aVoid) {
+                refreshGCMRegistered();
             }
         }.execute(null, null, null);
     }
+
+    private void unregisterGCMInBackground() {
+        new AsyncTask<Void, Void, Void>() {
+
+            @Override
+            protected Void doInBackground( Void... voids ) {
+                try {
+                    if (gcm == null) {
+                        gcm = GoogleCloudMessaging.getInstance(MainActivity.this);
+                    }
+
+                    gcm.unregister(); // odregistruju GCM
+
+                    regid = "";
+                    storeRegistrationId(MainActivity.this.getApplicationContext(), regid); // smazu registracni ID
+
+                } catch (IOException ex) {
+                    Log.i(TAG, "Error :" + ex.getMessage());
+                }
+
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                refreshGCMRegistered();
+            }
+        }.execute();
+    }
+
 
     /**
      * @return Application's version code from the {@code PackageManager}.
@@ -303,13 +365,8 @@ public class MainActivity extends Activity {
      */
     private void sendRegistrationIdToBackend() {
 
-        System.out.println("RegID: " + regid);
-//        this.setTitle(regid);
-
-
         AccountManager manager = (AccountManager) getSystemService(ACCOUNT_SERVICE);
         Account[] accounts = manager.getAccountsByType("com.google");
-
 
         // Zjisti udaje o zarizeni jako např IMEI atp
         TelephonyManager tm = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
@@ -342,56 +399,26 @@ public class MainActivity extends Activity {
         checkPlayServices();
 
         // Nastavi checkox a prida mu listener
-        solveCheckboxDevicePolicyEnabled();
+        refreshDeviceAdminEnabled();
 
-        solveCheckBoxGCMRegistered();
+        refreshGCMRegistered();
 
     }
 
-    public void solveCheckBoxGCMRegistered() {
+    public void refreshGCMRegistered() {
         if (isGCMRegistered()) {
-            checkBoxGCMRegistered.setChecked(true);
+            btnGcmRegistrationToggle.setText(R.string.btnGcmUnregistration);
         } else {
-            checkBoxGCMRegistered.setChecked(false);
+            btnGcmRegistrationToggle.setText(R.string.btnGcmRegistration);
         }
-//
-//        registerGCMInBackground();
-//
-//        checkBoxGCMRegistered.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-//            @Override
-//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-//                if (isChecked) {
-//                    registerGCMInBackground();
-//                } else {
-//                    try {
-//                        gcm.unregister();
-//                        storeRegistrationId(MainActivity.this.getApplicationContext(), "");
-//                    } catch (IOException exx) {
-//                    }
-//                }
-//            }
-//        });
     }
 
-    public void solveCheckboxDevicePolicyEnabled() {
+    public void refreshDeviceAdminEnabled() {
         if (isMyDevicePolicyReceiverActive()) {
-            checkBoxDevicePolicyEnabled.setChecked(true);
+            btnDeviceAdminToggle.setText(R.string.btnDeviceAdminDisabled);
         } else {
-            checkBoxDevicePolicyEnabled.setChecked(false);
+            btnDeviceAdminToggle.setText(R.string.btnDeviceAdminEnabled);
         }
-        checkBoxDevicePolicyEnabled.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
-                    intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, devicePolicyAdmin);
-                    intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, getString(R.string.admin_explanation));
-                    startActivityForResult(intent, REQUEST_ENABLE);
-                } else {
-                    devicePolicyManager.removeActiveAdmin(devicePolicyAdmin);
-                }
-            }
-        });
     }
 
 
@@ -406,6 +433,8 @@ public class MainActivity extends Activity {
             switch (requestCode) {
                 case REQUEST_ENABLE:
                     Log.v(TAG, "Enabling Policies Now");
+
+                    refreshDeviceAdminEnabled();
 
 //                    devicePolicyManager.setMaximumTimeToLock(devicePolicyAdmin, 30000L);
 //                    devicePolicyManager.setMaximumFailedPasswordsForWipe(devicePolicyAdmin, 5);
@@ -457,23 +486,5 @@ public class MainActivity extends Activity {
     }
 
 
-
-    public void onClickBtnStart(View view ){
-
-        if(view.getId() == R.id.btnStartRingActivity) {
-            Intent intent = new Intent(this, RingingActivity.class);
-            startActivity(intent);
-        } else if(view.getId() == R.id.btnStartLockScreenActivity) {
-//            showDialog("Textik na cosi");
-            Intent intent = new Intent(this, LockScreenActivity.class);
-            startActivity(intent);
-        } else if(view.getId() == R.id.btnStartDemoActivity) {
-            Intent intent = new Intent(this, DemoActivity.class);
-            startActivity(intent);
-
-
-
-        }
-    }
 
 }

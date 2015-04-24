@@ -9,7 +9,7 @@
     android:orientation="vertical"
     android:gravity="center"
     android:id="@+id/background"
-    tools:context="cz.vutbr.fit.stud.xslade12.lostphone.RingingActivity">
+    tools:context="cz.vutbr.fit.stud.xslade12.lostphone.activities.RingingActivity">
 
 
     <ImageView

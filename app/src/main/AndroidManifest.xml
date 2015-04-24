@@ -38,7 +38,7 @@
         android:theme="@style/AppTheme" >
 
         <activity
-            android:name=".MainActivity"
+            android:name=".activities.MainActivity"
             android:label="@string/title_activity_main" >
 
             <intent-filter>
@@ -50,7 +50,7 @@
         <!--android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"-->
         <!--android:theme="@android:style/Theme.Translucent.NoTitleBar"-->
         <activity
-            android:name=".LockScreenActivity"
+            android:name=".activities.LockScreenActivity"
             android:label="@string/app_name"
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
             android:showOnLockScreen="true"
@@ -58,11 +58,11 @@
             >
         </activity>
 
-        <service android:name=".LockScreenService" />
-        <service android:name=".OverlayService" />
+        <service android:name=".services.LockScreenService" />
+        <!--<service android:name=".OverlayService" />-->
 
         <receiver
-            android:name=".LockScreenReceiver"
+            android:name=".recievers.LockScreenReceiver"
             android:enabled="true" >
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
@@ -72,18 +72,18 @@
         </receiver>
 
         <activity
-            android:name=".RingingActivity"
+            android:name=".activities.RingingActivity"
             android:label="@string/title_activity_ringing"
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" >
         </activity>
 
 
-        <activity
+       <!-- <activity
             android:name=".DemoActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/app_name"
             android:launchMode="singleTop" >
-        </activity>
+        </activity>-->
         <!--
           WakefulBroadcastReceiver that will receive intents from GCM
           services and hand them to the custom IntentService.
@@ -92,7 +92,7 @@
           so only GCM services can send data messages for the app.
         -->
         <receiver
-            android:name=".GcmBroadcastReceiver"
+            android:name=".recievers.GcmBroadcastReceiver"
             android:permission="com.google.android.c2dm.permission.SEND" >
             <intent-filter>
 
@@ -103,12 +103,12 @@
             </intent-filter>
         </receiver>
 
-        <service android:name=".GcmIntentService" />
+        <service android:name=".services.GcmIntentService" />
 
 
 
         <receiver
-            android:name=".DevicePolicyReceiver"
+            android:name=".recievers.DevicePolicyReceiver"
             android:description="@string/device_admin_description"
             android:label="@string/device_admin"
             android:permission="android.permission.BIND_DEVICE_ADMIN" >
@@ -132,19 +132,19 @@
         </receiver>
 
 
-        <receiver android:name=".SimChangedReceiver">
+        <receiver android:name=".recievers.SimChangedReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.SIM_STATE_CHANGED"/>
             </intent-filter>
         </receiver>
 
-        <receiver android:name=".SmsCommandReciever">
+        <receiver android:name=".recievers.SmsCommandReciever">
             <intent-filter android:priority="1000">
                 <action android:name="android.provider.Telephony.SMS_RECEIVED"></action>
             </intent-filter>
         </receiver>
 
-        <receiver android:name=".NetworkChangeReceiver" >
+        <receiver android:name=".recievers.NetworkChangeReceiver" >
             <intent-filter>
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
             </intent-filter>

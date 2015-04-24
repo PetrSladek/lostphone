@@ -11,11 +11,15 @@
 
     <string name="hello_world">Hello world!</string>
     <string name="btnGotchaText">Mám tě!</string>
-    <string name="title_activity_main">MainActivity</string>
+    <string name="title_activity_main">LostPhone</string>
 
 
     <string name="device_admin">LostPhone</string>
     <string name="device_admin_description">Aplikace pro vzdálení ovládání zařízezní</string>
     <string name="admin_explanation">Aplikace pro vzdálení ovládání zařízezní</string>
+    <string name="btnDeviceAdminEnabled">Povolit administraci zařízení</string>
+    <string name="btnDeviceAdminDisabled">Zakázat administraci zařízení</string>
+    <string name="btnGcmRegistration">Zaregistrovat zařízení</string>
+    <string name="btnGcmUnregistration">Odregistrovat zařízení</string>
 
 </resources>

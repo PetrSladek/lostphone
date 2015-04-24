@@ -1,4 +1,4 @@
-package cz.vutbr.fit.stud.xslade12.lostphone;
+package cz.vutbr.fit.stud.xslade12.lostphone.recievers;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -10,6 +10,7 @@ import android.os.Environment;
 import java.io.File;
 import java.io.FilenameFilter;
 
+import cz.vutbr.fit.stud.xslade12.lostphone.Worker;
 import cz.vutbr.fit.stud.xslade12.lostphone.messages.WrongPassMessage;
 
 /**

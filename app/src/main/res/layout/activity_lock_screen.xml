@@ -19,25 +19,29 @@
         android:scaleType="centerInside"
         />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:text=" - text na lockscreen - "
-        android:textColor="@color/wallet_bright_foreground_holo_dark"
-        android:id="@+id/displayText"
-         />
-
     <Button
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
         android:text="@string/btnOwnerCallText"
         android:id="@+id/btnCallOwner"
         android:onClick="onClickBtnCallOwner" />
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="V případě nálezu telefonu mi prosím zavolejte zpátky"
+        android:textSize="24sp"
+        android:textAlignment="center"
+        android:padding="10dp"
+        android:background="#000000"
+        android:textColor="@color/wallet_bright_foreground_holo_dark"
+        android:id="@+id/displayText"
+         />
+
+
+
     <EditText
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="numberPassword"
         android:gravity="center"
@@ -47,7 +51,7 @@
         android:imeOptions="actionDone"
         />
     <Button
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/btnUnlockText"
         android:id="@+id/btnUnlock"
