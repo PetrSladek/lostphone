@@ -133,73 +133,19 @@ public class FrontCameraController {
     private void prepareCamera(){
         SurfaceView view = new SurfaceView(context);
 
-//        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-//        WindowManager.LayoutParams lparams = new WindowManager.LayoutParams(
-//                WindowManager.LayoutParams.WRAP_CONTENT,
-//                WindowManager.LayoutParams.WRAP_CONTENT,
-//                WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY,
-//                WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
-//                PixelFormat.RGB_888);
-//
-//        lparams.height = 100;
-//        lparams.width = 100;
-////
-//        wm.addView(view, lparams);
-//        activity.addContentView(view, lparams);
-
         SurfaceHolder holder = view.getHolder();
-//        holder.addCallback(new SurfaceHolder.Callback() {
-//            @Override
-//            public void surfaceCreated(SurfaceHolder holder) {
-//                Log.i("Camera", "surfaceCreated");
-//
-//
-////                    try {
-////                        camera.setPreviewDisplay(holder);
-////                    } catch (IOException e) {
-////                        throw new RuntimeException(e);
-////                    }
-////
-////                    camera.startPreview();
-////
-////                    camera.takePicture(null, null, new Camera.PictureCallback() {
-////                        @Override
-////                        public void onPictureTaken(byte[] data, Camera camera) {
-////                            camera.release();
-////                        }
-////                    });
-//
-//            }
-//
-//            @Override
-//            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-//                Log.i("Camera", "surfaceChanged");
-//            }
-//
-//            @Override
-//            public void surfaceDestroyed(SurfaceHolder holder) {
-//                Log.i("Camera", "surfaceDestroyed");
-//            }
-//        });
 
-//        holder.isCreating();
-
-//        view.setZOrderOnTop(true);
-//        holder.setFormat(PixelFormat.TRANSPARENT);
-//
         try{
             camera.setPreviewDisplay(holder);
-        }catch(IOException e){
+        } catch(IOException e){
             throw new RuntimeException(e);
         }
-//
+
         Camera.Parameters params = camera.getParameters();
         params.setJpegQuality(100);
 
         camera.setParameters(params);
-//
         camera.startPreview();
-
     }
 
 

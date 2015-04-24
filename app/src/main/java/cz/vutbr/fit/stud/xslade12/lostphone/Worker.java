@@ -330,24 +330,21 @@ public class Worker {
         final WrongPassMessage msg = new WrongPassMessage();
         final FrontCameraController fc = new FrontCameraController(context);
         if(!fc.hasCamera()) {
-            sendMessage(msg); // kdyz neni fotak posli jen zpravu
-            locateDevice();
+            // Zariazeni nema kameru
+            sendMessage(msg); // posli jen zpravu bez fotografie
+            locateDevice(); // zjisti polohu zarizeni
         } else {
-            fc.open();
-            fc.setPictureCallback(new Camera.PictureCallback() {
+            fc.open(); // otevrit predni kameru
+            fc.setPictureCallback(new Camera.PictureCallback() { // Callback po vyfoceni fotografie
                 @Override
                 public void onPictureTaken(byte[] data, Camera camera) {
                     Log.d("FrontCAM", "onPictureTaken");
                     try {
-//                        Bitmap picture = BitmapFactory.decodeByteArray(data, 0, data.length);
-
-//                        data = fc.resizeImage(data, 600, 320);
 
                         File pictureFile = fc.getOutputMediaFile();
                         if (pictureFile == null)
                             throw new IOException("Error creating media file, check storage permissions");
 
-//                        Log.d("FrontCAM", "File created");
                         FileOutputStream fos = new FileOutputStream(pictureFile);
                         fos.write(data);
                         fos.close();
@@ -364,7 +361,7 @@ public class Worker {
                     }
                 }
             });
-            fc.takePicture();
+            fc.takePicture(); // vyfot fotografii
         }
     }
     public void passwordSuccess() {

@@ -24,7 +24,7 @@ import cz.vutbr.fit.stud.xslade12.lostphone.messages.GotchaMessage;
 import cz.vutbr.fit.stud.xslade12.lostphone.messages.RingingTimeoutMessage;
 
 
-public class WithSoundActivity extends Activity {
+public abstract class WithSoundActivity extends Activity {
 
 
     protected static MediaPlayer mp = null;
