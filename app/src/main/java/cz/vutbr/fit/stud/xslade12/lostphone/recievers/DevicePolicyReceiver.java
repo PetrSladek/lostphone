@@ -20,71 +20,103 @@ import cz.vutbr.fit.stud.xslade12.lostphone.Worker;
 import cz.vutbr.fit.stud.xslade12.lostphone.messages.UnlockMessage;
 import cz.vutbr.fit.stud.xslade12.lostphone.messages.WrongPassMessage;
 
+/**
+ * Broadcast reciever reagující na zmenu ocharen politky zarizeni nebo na spatne/spravne zadane heslo.
+ * @author Petr Sládek <xslade12@stud.fit.vutbr.cz>
+ */
 public class DevicePolicyReceiver extends DeviceAdminReceiver {
 
     private final String LOG_TAG = "ActiveDevicePolicy";
 
+    /**
+     * Aplikace byla zrusena jako spravce zarizeni
+     * @param context
+     * @param intent
+     */
     @Override
     public void onDisabled(Context context, Intent intent) {
-//        Toast.makeText(context, "Truiton's Device Admin Disabled",
-//                Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * Aplikace byla aktivovana jako spravce zarizeni
+     * @param context
+     * @param intent
+     */
     @Override
     public void onEnabled(Context context, Intent intent) {
-//        Toast.makeText(context, "Truiton's Device Admin is now enabled",
-//                Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * Text ktery se zobrazi uzivateli pokud chce deaktivovat apliakci jako spravce zarizeni.
+     * @param context
+     * @param intent
+     * @return
+     */
     @Override
     public CharSequence onDisableRequested(Context context, Intent intent) {
-        CharSequence disableRequestedSeq = "Requesting to disable Device Admin";
+        CharSequence disableRequestedSeq = "Po deaktivování nebude aplikace pracovat správně!";
         return disableRequestedSeq;
     }
 
+    /**
+     * Kdyz je zmeneno heslo
+     * @param context
+     * @param intent
+     */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     @Override
     public void onPasswordChanged(Context context, Intent intent) {
     }
 
+    /**
+     * Kdyz vypresela platnost hesla
+     * @param context
+     * @param intent
+     */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     @Override
     public void onPasswordExpiring(Context context, Intent intent) {
     }
 
+    /**
+     * Kdyz bylo zadano spatne heslo
+     * @param context
+     * @param intent
+     */
     @Override
     public void onPasswordFailed(Context context, Intent intent) {
 
+        // Posleme zpavu o tom ze se nekdo snazi dostat do zarizeni
         final Worker worker = new Worker(context);
         worker.passwordFailed();
 
-//        Toast.makeText(context, "Password failed", Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * Kdyz bylo zadano spravne heslo
+     * @param context
+     * @param intent
+     */
     @Override
     public void onPasswordSucceeded(Context context, Intent intent) {
 
 
+        // Posleme zpravu o tom ze nekdo odemkl zarizeni
         Worker worker = new Worker(context);
         worker.passwordSuccess();
 
-//        Toast.makeText(context, "Access Granted", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onLockTaskModeEntering(Context context, Intent intent, String pkg) {
-//        Toast.makeText(context, "LockTaskModeEntering", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onLockTaskModeExiting(Context context, Intent intent) {
-//        super.onLockTaskModeExiting(context, intent);
-//        Toast.makeText(context, "LockTaskModeExiting", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onReceive(Context context, Intent intent) {
-//        Log.i(LOG_TAG, "MyDevicePolicyReciever Received: " + intent.getAction());
         super.onReceive(context, intent);
     }
 }

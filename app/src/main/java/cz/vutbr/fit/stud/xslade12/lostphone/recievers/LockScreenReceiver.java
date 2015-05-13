@@ -7,20 +7,30 @@ import android.content.Intent;
 import cz.vutbr.fit.stud.xslade12.lostphone.activities.LockScreenActivity;
 import cz.vutbr.fit.stud.xslade12.lostphone.Worker;
 
+/**
+ * Broadcast reciever reagující na zamknuti zarizeni
+ * @author Petr Sládek <xslade12@stud.fit.vutbr.cz>
+ */
 public class LockScreenReceiver extends BroadcastReceiver {
+    /**
+     * Otevre LockScreenActivity
+     * @param context
+     * @param intent
+     */
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
 
-        //If the screen was just turned on or it just booted up, start your Lock Activity
+        // Pokud jde o udalost zapnutí displeje nebo nastartování zařízení
         if(action.equals(Intent.ACTION_SCREEN_ON) || action.equals(Intent.ACTION_BOOT_COMPLETED))
         {
-//            DevicePolicyManager mDPM = (DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
+
             Worker worker = new Worker(context);
-            if(!worker.isLocked()) {
+            if(!worker.isLocked()) { // pokud zarizeni neni aktualne zamknuté tak koncim.
                 return;
             }
 
+            // spustim LockScreen activity
             Intent i = new Intent(context, LockScreenActivity.class);
             i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(i);

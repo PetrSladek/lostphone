@@ -10,7 +10,8 @@ import cz.vutbr.fit.stud.xslade12.lostphone.Worker;
 import cz.vutbr.fit.stud.xslade12.lostphone.messages.SimStateChangedMessage;
 
 /**
- * Created by Peggy on 14.3.2015.
+ * Broadcast reciever reagující na zmenu stavu SIM karty
+ * @author Petr Sládek <xslade12@stud.fit.vutbr.cz>
  */
 public class SimChangedReceiver extends BroadcastReceiver {
 
@@ -21,9 +22,8 @@ public class SimChangedReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
 
         worker = new Worker(context);
-//        String myPhoneNumber = worker.readPhoneNumber();
 
-        // Checks Sim card State
+        // Ziská stav SIM karty
         telephoneMgr = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         int simState = telephoneMgr.getSimState();
 
@@ -48,23 +48,16 @@ public class SimChangedReceiver extends BroadcastReceiver {
                 Log.i("SimStateListener", "Sim State ready");
                 String phoneNumber = telephoneMgr.getLine1Number();
                 Log.i("SimStateListener", phoneNumber);
-//                Toast.makeText(context, phoneNumber, Toast.LENGTH_LONG).show();
 
+                // Zaslat udaje o simkarte
                 sendSimStateChangedMessage();
-
-//                if(phoneNumber.equals(myPhoneNumber)){
-//                    // do nothing
-//                    break;
-//                }
-//                else{
-//                    Log.i("SimStateListener", "Sim card is changed");
-//                    // do something
-//                    break;
-//                }
         }
     }
 
 
+    /**
+     * Získá informace o SIM kartě s odešle je zprávou na server
+     */
     protected void sendSimStateChangedMessage() {
         SimStateChangedMessage msg = new SimStateChangedMessage();
 

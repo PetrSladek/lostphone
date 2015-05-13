@@ -39,7 +39,7 @@ public class LocationController {
             locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListenerNetwork);
 
         timer = new Timer();
-        timer.schedule(new GetLastLocation(), 20000);
+        timer.schedule(new GetLastLocation(), 20000); // každých 20s
         return true;
     }
 
@@ -73,8 +73,8 @@ public class LocationController {
             locationManager.removeUpdates(locationListenerGps);
             locationManager.removeUpdates(locationListenerNetwork);
 
-            Location locNet = null;
             Location locGps = null;
+            Location locNet = null;
 
             if(gpsEnabled)
                 locGps = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
@@ -88,13 +88,11 @@ public class LocationController {
                 else
                     locationResult.gotLocation(locNet);
                 return;
-            }
-
-            if(locGps!=null){
+            } else if(locGps!=null){
                 locationResult.gotLocation(locGps);
                 return;
             }
-            if(locNet!=null){
+            else if(locNet!=null){
                 locationResult.gotLocation(locNet);
                 return;
             }

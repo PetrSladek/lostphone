@@ -25,22 +25,16 @@ import cz.vutbr.fit.stud.xslade12.lostphone.services.GcmIntentService;
 
 
 /**
- * This {@code WakefulBroadcastReceiver} takes care of creating and managing a
- * partial wake lock for your app. It passes off the work of processing the GCM
- * message to an {@code IntentService}, while ensuring that the device does not
- * go back to sleep in the transition. The {@code IntentService} calls
- * {@code GcmBroadcastReceiver.completeWakefulIntent()} when it is ready to
- * release the wake lock.
+ * Broadcast reciever reagující na prijmuti zpravy z GCM
+ * @author Petr Sládek <xslade12@stud.fit.vutbr.cz>
  */
-
 public class GcmBroadcastReceiver extends WakefulBroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
 
-        // Explicitly specify that GcmIntentService will handle the intent.
+        // Spustime wakefull service, ktera se postara o spracovani GCM message
         ComponentName comp = new ComponentName(context.getPackageName(), GcmIntentService.class.getName());
-        // Start the service, keeping the device awake while it is launching.
         startWakefulService(context, (intent.setComponent(comp)));
         setResultCode(Activity.RESULT_OK);
 
