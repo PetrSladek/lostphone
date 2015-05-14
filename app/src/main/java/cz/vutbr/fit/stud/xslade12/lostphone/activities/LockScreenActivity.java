@@ -23,60 +23,43 @@ import cz.vutbr.fit.stud.xslade12.lostphone.R;
 import cz.vutbr.fit.stud.xslade12.lostphone.Worker;
 import cz.vutbr.fit.stud.xslade12.lostphone.recievers.DevicePolicyReceiver;
 
-
+/**
+ * Obrazovka uzamknutého zařízení
+ * @author Petr Sládek <xslade12@stud.fit.vutbr.cz>
+ */
 public class LockScreenActivity extends WithSoundActivity {
 
-    DevicePolicyManager mDPM;
-    ComponentName mDeviceAdminSample;
+    public static final int REQUEST_CODE_CALLOWNER = 666;
+    DevicePolicyManager devicePolicyManager;
+    ComponentName devicePolicyAdmin;
     Worker worker;
 
+    /**
+     * Metoda spustena po vytvorení activity (viz life cyklus activity)
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         worker = new Worker(this);
 
-        // home key is locked since then
-//        homeKeyLocker.unlock();
-//        // home key is unlocked since
+        // DevicePolicyManager a komponenta DevicePolieReciever
+        devicePolicyManager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);;
+        devicePolicyAdmin = new ComponentName(this, DevicePolicyReceiver.class);
 
-//        startService(new Intent(this, LockScreenService.class));
-//
-//        super.onCreate(savedInstanceState);
-//        final AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-//        alertDialog.setTitle("your title");
-//        alertDialog.setMessage("your message");
-//        alertDialog.setIcon(android.R.drawable.ic_dialog_alert);
-//
-//        alertDialog.show();
-//
-//
-
-
-
-        mDPM = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);;
-        mDeviceAdminSample = new ComponentName(this, DevicePolicyReceiver.class);
-
-        // http://stackoverflow.com/questions/3594532/how-to-programmaticaly-lock-screen-in-android
-        // http://stackoverflow.com/questions/4545079/lock-the-android-device-programatically
-////
-//            KeyguardManager keyguardManager = (KeyguardManager) getSystemService(Activity.KEYGUARD_SERVICE);
-//            KeyguardManager.KeyguardLock lock = keyguardManager.newKeyguardLock(KEYGUARD_SERVICE);
-////
-//            lock.reenableKeyguard();
-        //lock.disableKeyguard()
-        // ---
-
-        //Set up our Lockscreen
+        // Nastav na fullscreen a pres bezny lockscreen
         makeFullScreen();
 
+        // Nastaveni XML s layoutem
         setContentView(R.layout.activity_lock_screen);
 
-
-        // your text box
+        // Pole pro zadani hesla
         EditText editUnlock = (EditText) findViewById(R.id.editUnlock);
+        // Tlacitko potvrzeni
         final Button btnUnlock = (Button) findViewById(R.id.btnUnlock);
 
+        // Stuisknutí "Enter" po vyplneněni hesla
         editUnlock.setOnEditorActionListener(new EditText.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -88,71 +71,24 @@ public class LockScreenActivity extends WithSoundActivity {
             }
         });
 
-
+        // Zpracuje intent
         processIntent(getIntent());
-
     }
 
     /**
-     * A simple method that sets the screen to fullscreen.  It removes the Notifications bar,
-     * the Actionbar and the virtual keys (if they are on the phone)
+     * Nastavi parametry okna na fullscreen
      */
     public void makeFullScreen() {
-
-//        requestWindowFeature(Window.FEATURE_NO_TITLE);
-////
-////        over lockscreen http://stackoverflow.com/questions/3629179/android-activity-over-default-lock-screen
-////        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
-//
-//        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-////        getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-//        getWindow().setFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON, WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-//        getWindow().setFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED, WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
-////
-////        //Make us non-modal, so that others can receive touch events.
-//        getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL, WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL);
-////        //...but notify us that it happened.
-//        getWindow().setFlags(WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH, WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH);
-////
-//
-//        getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
-//        getWindow().setBackgroundDrawableResource(android.R.color.transparent);
-//        getWindow().setFormat(PixelFormat.TRANSLUCENT);
-
 
         getWindow().setType(WindowManager.LayoutParams.TYPE_KEYGUARD_DIALOG);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_FULLSCREEN | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
 
-
-//        final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-//                WindowManager.LayoutParams.FLAG_FULLSCREEN,
-//                WindowManager.LayoutParams.FLAG_FULLSCREEN,
-//                WindowManager.LayoutParams.TYPE_SYSTEM_ALERT,
-//                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
-//                PixelFormat.TRANSLUCENT);
-//
-//        WindowManager wm = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
-//
-//        ViewGroup mTopView = (ViewGroup) getLayoutInflater().inflate(R.layout.activity_lock_screen, null);
-//        getWindow().setAttributes(params);
-//        wm.addView(mTopView, params);
-
-
-
-
-//        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SYSTEM);
-
-//        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-//        if (Build.VERSION.SDK_INT < 19) { //View.SYSTEM_UI_FLAG_IMMERSIVE is only on API 19+
-//            this.getWindow().getDecorView()
-//                    .setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
-//        } else {
-//            this.getWindow().getDecorView()
-//                    .setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE);
-//        }
     }
 
 
+    /**
+     * Metorda pri zruseni activity (viz life cycle activity)
+     */
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -160,6 +96,10 @@ public class LockScreenActivity extends WithSoundActivity {
         soundOff();
     }
 
+    /**
+     * Metoda ktera se vola pri opetovnem vyvolani activity v pripade ze uz jednou bezi
+     * @param intent
+     */
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
@@ -167,30 +107,52 @@ public class LockScreenActivity extends WithSoundActivity {
         processIntent(intent);
     }
 
+    /**
+     * Zpracovani intentu pri spusteni nebo opetovnem spusteni
+     * @param intent
+     */
     protected void processIntent(Intent intent) {
+        // Podle extras zapnu mood ukradeni nebi ne
         if(intent.getExtras() != null && intent.getExtras().getBoolean("stolenMode", false)) {
             soundOn(R.raw.stolen);
         } else {
             soundOff();
         }
 
+        // Prepise text na displeji
         String text = worker.getPreferences().getString("displayText", null);
         TextView textView = (TextView) findViewById(R.id.displayText);
         textView.setText( text );
     }
 
+
+    /**
+     * Pretizeni stisku tlacika zpět
+     */
+    @Override
+    public void onBackPressed() {
+        return; //Nic nedelej!
+    }
+
+    /**
+     * Metoda obstará odemknutí zarizeni
+     */
     protected void unlockPhone() {
 
-        mDPM.setPasswordQuality(mDeviceAdminSample, DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED);
-        mDPM.setPasswordMinimumLength(mDeviceAdminSample, 0);
-        mDPM.resetPassword("", DevicePolicyManager.RESET_PASSWORD_REQUIRE_ENTRY);
+        // Vynuluje heslo
+        devicePolicyManager.setPasswordQuality(devicePolicyAdmin, DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED);
+        devicePolicyManager.setPasswordMinimumLength(devicePolicyAdmin, 0);
+        devicePolicyManager.resetPassword("", DevicePolicyManager.RESET_PASSWORD_REQUIRE_ENTRY);
 
+        // Vypne standarni lockscreen
         KeyguardManager keyguardManager = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
         KeyguardManager.KeyguardLock lock = keyguardManager.newKeyguardLock(Context.KEYGUARD_SERVICE);
         lock.disableKeyguard();
 
+        // Posle zpravu o tom ze zarizeni bylo odemknuto
         worker.passwordSuccess();
 
+        // Po dvou vterinach vypne activitu
         Timer timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override
@@ -199,44 +161,36 @@ public class LockScreenActivity extends WithSoundActivity {
             }
         }, 2000);
 
-//        android.os.Process.killProcess(android.os.Process.myPid());
     }
 
-//    @Override
-//    public boolean onTouchEvent(MotionEvent event) {
-//        // If we've received a touch notification that the user has touched
-//        // outside the app, finish the activity.
-//        if (MotionEvent.ACTION_OUTSIDE == event.getAction()) {
-////            finish();
-//            return true;
-//        }
-//
-//        // Delegate everything else to Activity.
-//        return super.onTouchEvent(event);
-//    }
-
-    @Override
-    public void onBackPressed() {
-        return; //Do nothing!
-    }
-
-
-
+    /**
+     * Obsluha tlafitka "Zavolat majiteli"
+     * @param view
+     */
     public void onClickBtnCallOwner(View view) {
 
+        // Docasne vyplne uzamknutí
         KeyguardManager keyguardManager = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
         KeyguardManager.KeyguardLock lock = keyguardManager.newKeyguardLock(Context.KEYGUARD_SERVICE);
         lock.disableKeyguard();
 
+        // Vytoci cislo majitele a "pocka na vysledek"
         Intent callIntent = new Intent(Intent.ACTION_CALL);
         callIntent.setData(Uri.parse("tel:" + worker.getPreferences().getString("ownerPhoneNumber", null)));
-        startActivityForResult(callIntent, 666);
+        startActivityForResult(callIntent, REQUEST_CODE_CALLOWNER);
 
     }
 
+
+    /**
+     * Vraceni do Activity pri "cekani na vysledek"
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == 666) {
+        if (requestCode == REQUEST_CODE_CALLOWNER) { // Pokud jsme se vratili z volani majiteli, obnovime bezny lockscreen
             KeyguardManager keyguardManager = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
             KeyguardManager.KeyguardLock lock = keyguardManager.newKeyguardLock(Context.KEYGUARD_SERVICE);
             lock.reenableKeyguard();
@@ -245,15 +199,20 @@ public class LockScreenActivity extends WithSoundActivity {
 
     }
 
+    /**
+     * Obsoluha udalosti tlacitka odemknout, po zadani PINu
+     * @param view
+     */
     public void onClickBtnUnlock(View view) {
         EditText editUnlock = (EditText) findViewById(R.id.editUnlock);
         String pin = editUnlock.getText().toString();
 
+        // Pokud je spravne heslo odemkneme zarizeni
         if (pin.equals( worker.getPreferences().getString("password", null) )) {
 
             unlockPhone(); // zrusi heslo
 
-        } else {
+        } else { // Pokud ne, oznamime chybu a zasleme zpravu o neuspesnem odemceni
             worker.passwordFailed();
 
             editUnlock.setText(""); // vymaze input s pinem
@@ -262,12 +221,16 @@ public class LockScreenActivity extends WithSoundActivity {
     }
 
 
-    //here's where most of the magic happens
+    /**
+     * Pretizeni udalosti HW tlacitek, aby nevypnuli lockscreen
+     * @param event
+     * @return
+     */
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        // Do this on key down
+        // Pri domacknuti
         boolean up = event.getAction() == KeyEvent.ACTION_UP;
-        //flags to true if the event we are getting is the up (release)
+
         switch (event.getKeyCode()) {
             case KeyEvent.KEYCODE_VOLUME_DOWN:
             case KeyEvent.KEYCODE_FOCUS:

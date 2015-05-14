@@ -70,7 +70,7 @@ public class Worker {
     public Worker(Context context) {
         this.context = context;
         this.preferences = context.getSharedPreferences("global", Context.MODE_PRIVATE);
-        this.gcmId = preferences.getString(MainActivity.PROPERTY_REG_ID, null);
+        this.gcmId = preferences.getString(MainActivity.PROPERTY_GCM_ID, null);
     }
 
 
