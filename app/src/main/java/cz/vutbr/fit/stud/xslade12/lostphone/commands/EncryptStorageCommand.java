@@ -1,7 +1,9 @@
 package cz.vutbr.fit.stud.xslade12.lostphone.commands;
 
 /**
- * Created by Peggy on 28.2.2015.
+ * Příkaz pro zasifrovani dat na kartě
+ * @author Petr Sládek <xslade12@stud.fit.vutbr.cz>
  */
 public class EncryptStorageCommand extends Command {
+
 }

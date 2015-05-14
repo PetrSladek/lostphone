@@ -13,7 +13,6 @@ import android.media.MediaPlayer;
  */
 public abstract class WithSoundActivity extends Activity {
 
-
     /**
      * Prehravac hudby
      */

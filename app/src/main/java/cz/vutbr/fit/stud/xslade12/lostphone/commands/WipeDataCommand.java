@@ -2,7 +2,9 @@ package cz.vutbr.fit.stud.xslade12.lostphone.commands;
 
 
 /**
- * Created by Peggy on 28.2.2015.
+ * Přikaz pro uvedení telefonu do továrního nastavení
+ * @author Petr Sládek <xslade12@stud.fit.vutbr.cz>
  */
 public class WipeDataCommand extends Command {
+
 }

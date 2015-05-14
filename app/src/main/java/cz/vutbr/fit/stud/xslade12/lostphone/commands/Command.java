@@ -3,8 +3,14 @@ package cz.vutbr.fit.stud.xslade12.lostphone.commands;
 import android.os.Bundle;
 
 
+/**
+ * Abstraktní předek všech příkazů
+ * @author Petr Sládek <xslade12@stud.fit.vutbr.cz>
+ */
 public abstract class Command {
 
+
+    // Typy prikazu
     static final int TYPE_PING              = 0x0000;
     static final int TYPE_RING              = 0x0001;
     static final int TYPE_LOCK              = 0x0002;
@@ -14,13 +20,13 @@ public abstract class Command {
     static final int TYPE_WIPEDATA          = 0x0006;
 
     /**
-     * Unique ID
+     * Unikatni ID
      */
     protected int id;
 
 
     /**
-     * Get Unique ID
+     * Vrat Unikatni ID
      * @return int
      */
     public int getId() {
@@ -28,6 +34,11 @@ public abstract class Command {
     }
 
 
+    /**
+     * Vytvori instanci daneho prikazu z prichotiho Bundlu z GCM
+     * @param data
+     * @return
+     */
     public static Command createFromBundle(Bundle data) {
 
         int type = Integer.valueOf(data.getString("type"));
@@ -38,7 +49,7 @@ public abstract class Command {
                 cmdRing.id = id;
                 cmdRing.closeAfter = Long.valueOf(data.getString("closeAfter"));
                 return cmdRing;
-//            break;
+
             case TYPE_LOCK:
                 LockCommand cmdLock = new LockCommand();
                 cmdLock.id = id;
@@ -46,41 +57,35 @@ public abstract class Command {
                 cmdLock.displayText = data.getString("displayText");
                 cmdLock.ownerPhoneNumber = data.getString("ownerPhoneNumber");
                 return cmdLock;
-//            break;
+
             case TYPE_LOCATE:
                 LocateCommand cmdLocate = new LocateCommand();
                 cmdLocate.id = id;
                 return cmdLocate;
-//            break;
+
             case TYPE_GETLOG:
                 GetLogCommand cmdGetLog = new GetLogCommand();
                 cmdGetLog.id = id;
                 return cmdGetLog;
-//            break;
+
             case TYPE_ENCRYPTSTORAGE:
                 EncryptStorageCommand cmdEncryptStorage = new EncryptStorageCommand();
                 cmdEncryptStorage.id = id;
                 return cmdEncryptStorage;
+
             case TYPE_WIPEDATA:
                 WipeDataCommand cmdWipeData = new WipeDataCommand();
                 cmdWipeData.id = id;
                 return cmdWipeData;
-//            break;
+
             case TYPE_PING:
             default:
                 PingCommand cmdPing = new PingCommand();
                 cmdPing.id = id;
                 return cmdPing;
-//            break;
+
         }
 
-
-
-//        Command command = new Command();
-//        command.setId( Integer.valueOf(data.getString("id"))); // default type 0
-//        command.setType(Integer.valueOf(data.getString("type"))); // default type PING
-
-//        return cmd;
     }
 
 }

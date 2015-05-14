@@ -1,10 +1,14 @@
 package cz.vutbr.fit.stud.xslade12.lostphone.commands;
 
 /**
- * Created by Peggy on 28.2.2015.
+ * Příkaz na prozvonění zařízení
+ * @author Petr Sládek <xslade12@stud.fit.vutbr.cz>
  */
 public class RingCommand extends Command {
 
+    /**
+     * Doba, po ktere se prozvoneni ukončí
+     */
     protected long closeAfter = 0;
 
     public long getCloseAfter() {

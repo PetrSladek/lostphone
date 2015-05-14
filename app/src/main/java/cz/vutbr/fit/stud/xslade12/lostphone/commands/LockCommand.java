@@ -1,14 +1,24 @@
 package cz.vutbr.fit.stud.xslade12.lostphone.commands;
 
 /**
- * Created by Peggy on 28.2.2015.
+ * Příkaz pro uzamceni zarizeni
+ * @author Petr Sládek <xslade12@stud.fit.vutbr.cz>
  */
 public class LockCommand extends Command {
 
+    /**
+     * Heslo pro odemknuti
+     */
     protected String password;
 
+    /**
+     * Telefonni cislo majitele
+     */
     protected String ownerPhoneNumber;
 
+    /**
+     * Text, ktery se zobrazi na displeji
+     */
     protected String displayText;
 
 
