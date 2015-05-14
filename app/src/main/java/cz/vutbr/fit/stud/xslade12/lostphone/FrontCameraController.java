@@ -21,6 +21,10 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 
+/**
+ * Třída pro tajné získání fotografie z přední kamery
+ * @author Petr Sládek <xslade12@stud.fit.vutbr.cz>
+ */
 public class FrontCameraController {
 
     private Context context;
@@ -35,6 +39,7 @@ public class FrontCameraController {
     public FrontCameraController(Context c){
         context = c.getApplicationContext();
 
+        // Zjisti jestli je dostupna predni kamera
         if(context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FRONT)){
             cameraId = getFrontCameraId();
 
@@ -48,10 +53,17 @@ public class FrontCameraController {
         }
     }
 
+    /**
+     * Je dostupna predni kamera?
+     * @return
+     */
     public boolean hasCamera(){
         return hasCamera;
     }
 
+    /**
+     * Otevrit predni kameru
+     */
     public void open(){
         camera = null;
 
@@ -66,13 +78,25 @@ public class FrontCameraController {
         }
     }
 
+    /**
+     * Nastavi Callback po vytvoření fotografie
+     * @param callback
+     */
     public void setPictureCallback(Camera.PictureCallback callback) {
         pictureCallback = callback;
     }
+
+    /**
+     * Vyfot fotku (potichu)
+     */
     public void takePicture(){
         takePicture(true);
     }
 
+    /**
+     * Vyfot fotku
+     * @param silent s/bez stlumeni zvuku
+     */
     public void takePicture(final boolean silent){
         if(hasCamera){
 
@@ -80,6 +104,8 @@ public class FrontCameraController {
                 AudioManager mgr = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
                 mgr.setStreamMute(AudioManager.STREAM_SYSTEM, true);
             }
+
+            // Po vteřine vyfotí fotku
             Timer t = new Timer();
             t.schedule(new TimerTask() {
                 @Override
@@ -87,7 +113,7 @@ public class FrontCameraController {
                     camera.takePicture(null, null, new Camera.PictureCallback() {
                         @Override
                         public void onPictureTaken(byte[] data, Camera camera) {
-                            Log.i("Camera", "onPictureTaken2");
+                            Log.i("Camera", "onPictureTaken");
 
                             // Zavola pridanej callback
                             pictureCallback.onPictureTaken(data, camera);
@@ -107,6 +133,9 @@ public class FrontCameraController {
         }
     }
 
+    /**
+     * Uvolnění přední kamery
+     */
     public void release(){
         if(camera != null){
             camera.stopPreview();
@@ -115,6 +144,10 @@ public class FrontCameraController {
         }
     }
 
+    /**
+     * Z dosupných kamer zjistí ID přední kamery
+     * @return
+     */
     private int getFrontCameraId(){
         int camId = -1;
         int numberOfCameras = Camera.getNumberOfCameras();
@@ -130,6 +163,9 @@ public class FrontCameraController {
         return camId;
     }
 
+    /**
+     * Nastavi parametry kamery a vytvori neviditelne nahledove pole
+     */
     private void prepareCamera(){
         SurfaceView view = new SurfaceView(context);
 
@@ -149,8 +185,11 @@ public class FrontCameraController {
     }
 
 
-
-    public File getOutputMediaFile(){
+    /**
+     * Vytvori unikatni soubor pro ulozeni fotografie
+     * @return
+     */
+    public static File getOutputMediaFile(){
         // To be safe, you should check that the SDCard is mounted
         // using Environment.getExternalStorageState() before doing this.
 
@@ -176,6 +215,13 @@ public class FrontCameraController {
     }
 
 
+    /**
+     * Zmensi fotografie na dano uvelikost
+     * @param input raw data
+     * @param width vyska
+     * @param height sířka
+     * @return rawjpegdata
+     */
     byte[] resizeImage(byte[] input, int width, int height) {
         Bitmap original = BitmapFactory.decodeByteArray(input, 0, input.length);
         Bitmap resized = Bitmap.createScaledBitmap(original, width, height, true);

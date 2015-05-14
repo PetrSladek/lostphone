@@ -4,9 +4,6 @@ import android.util.Base64;
 
 import java.io.File;
 
-import retrofit.http.Part;
-import retrofit.mime.TypedFile;
-
 /**
  * Zpráva o tom, že bylo špatně zadané heslo
  * @author Petr Sládek <xslade12@stud.fit.vutbr.cz>

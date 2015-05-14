@@ -18,7 +18,8 @@ import retrofit.mime.TypedFile;
 import retrofit.mime.TypedString;
 
 /**
- * Created by Peggy on 4.3.2015.
+ * Interface definujici rozhrani REST API serveru pro retrofit
+ * @author Petr Sládek <xslade12@stud.fit.vutbr.cz>
  */
 public interface ApiServiceInterface {
 

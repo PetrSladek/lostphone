@@ -55,21 +55,51 @@ import retrofit.mime.TypedFile;
 import retrofit.mime.TypedString;
 
 
+/**
+ * Třída zajišťující vykonávání příkazů a zasílání zpráv
+ * @author Petr Sládek <xslade12@stud.fit.vutbr.cz>
+ */
 public class Worker {
 
+    /**
+     * Tag pro logování
+     */
+    public static final String TAG = "LostPhone Worker";
 
-    public static final String TAG = "LostPhone-Worker";
+    /**
+     * Apliační context
+     */
     protected Context context;
+
+    /**
+     * Registračníé ID GCM
+     */
     protected String gcmId;
+
+    /**
+     * Sdilena data pro aplikaci
+     */
     protected SharedPreferences preferences;
+
+    /**
+     * Služba pro REST API
+     */
     private static ApiServiceInterface restService;
+
+    /**
+     * ID projektu z Google API konzole
+     *
+     * From https://console.developers.google.com/
+     */
     public static final String GCM_SENDER_ID = "941272288463";
 
     static AtomicInteger msgId = new AtomicInteger();
 
     public Worker(Context context) {
         this.context = context;
+        // privatni uloziste sdilenych aplikacnich dat
         this.preferences = context.getSharedPreferences("global", Context.MODE_PRIVATE);
+        // Ulozene GCM ID
         this.gcmId = preferences.getString(MainActivity.PROPERTY_GCM_ID, null);
     }
 
@@ -82,12 +112,16 @@ public class Worker {
         return gcmId;
     }
 
+    /**
+     * Zpracuje prikaz a vykona ho
+     * @param command
+     */
     public void proccess(Command command) {
 //        Response response;
         if(command instanceof PingCommand) {
             // vrati response PONG nebo tak neco
             sendAck(command);
-            processPong((PingCommand) command);
+            processPing((PingCommand) command);
         } else if(command instanceof RingCommand) {
             // spusti Ringin
             sendAck(command);
@@ -116,11 +150,23 @@ public class Worker {
     }
 
 
-
-    protected void processPong(PingCommand command) {
+    /**
+     * Zpracuje prikaz Ping a vykona ho.
+     *
+     * Pošle pong zprávu
+     * @param command příkaz
+     */
+    protected void processPing(PingCommand command) {
         PongMessage msg = new PongMessage();
         sendMessage(msg);
     }
+
+    /**
+     * Zpracuje prikaz Ring a vykona ho.
+     *
+     * Otevře RingingActivity s potřebnymi parametry
+     * @param command příkaz
+     */
     protected void processRing(RingCommand command) {
         // Pokusi se lokalizovat zarizeni
         locateDevice();
@@ -130,21 +176,49 @@ public class Worker {
         intent.putExtra("closeAfter", (long) command.getCloseAfter());
         context.startActivity(intent);
     }
+
+    /**
+     * Zpracuje prikaz Lock a vykona ho.
+     *
+     * Uzamkne telefon
+     * @param command příkaz
+     */
     protected void processLock(LockCommand command) {
         startLockMode(command.getPassword(), command.getDisplayText(), command.getOwnerPhoneNumber());
     }
+
+
+    /**
+     * Zpracuje prikaz Locate a vykona ho.
+     * @param command příkaz
+     */
     protected void processLocate(LocateCommand command) {
         locateDevice();
     }
+
+    /**
+     * Zpracuje prikaz GetLog a vykona ho.
+     * @param command příkaz
+     */
     protected void processGetLog(GetLogCommand command) {
         LogMessage msg = new LogMessage();
         msg.setCallLog(getCallLog()); // vypis volani
         msg.setSmsLog(getSmsLog()); // vypis sms
         sendMessage(msg);
     }
+
+    /**
+     * Zpracuje prikaz EncryptStorage a vykona ho.
+     * @param command příkaz
+     */
     protected void processEncryptStorage(EncryptStorageCommand command) {
         storageEncrypt();
     }
+
+    /**
+     * Zpracuje prikaz WipeData a vykona ho.
+     * @param command příkaz
+     */
     protected void processWipeData(WipeDataCommand command) {
         wipeData();
     }
@@ -163,30 +237,32 @@ public class Worker {
         return restService;
     }
 
-    protected void sendAck(Command command) {
-        sendAckOverGcm(command);
-    }
 
 
 
-    protected void sendAckOverRest(Command command) {
-        int id = command.getId();
 
-        getRestService().ackCommand(gcmId, id, new Date(), new Callback<String>() {
-            @Override
-            public void success(String s, Response response) {
+//    protected void sendAckOverRest(Command command) {
+//        int id = command.getId();
+//
+//        getRestService().ackCommand(gcmId, id, new Date(), new Callback<String>() {
+//            @Override
+//            public void success(String s, Response response) {
+//
+//            }
+//
+//            @Override
+//            public void failure(RetrofitError error) {
+//
+//            }
+//        });
+//    }
 
-            }
 
-            @Override
-            public void failure(RetrofitError error) {
-
-            }
-        });
-    }
-
-
-    protected void sendAckOverGcm(final Command command) {
+    /**
+     * Posle ACK message přes GCM
+     * @param command
+     */
+    protected void sendAck(final Command command) {
 
         new AsyncTask<Void, Void, String>() {
             @Override
@@ -218,12 +294,19 @@ public class Worker {
     }
 
 
-
+    /**
+     * Pošle zprávu
+     * @param message
+     */
     public void sendMessage(Message message) {
         message.setDate(new Date());
         sendMessageOverGcm(message);
     }
 
+    /**
+     * Pošle zpravu přes HTTP REST
+     * @param message
+     */
     protected void sendMessageOverHttp(final Message message) {
 
 
@@ -261,19 +344,22 @@ public class Worker {
 
     }
 
+    /**
+     * Pošle zpravu přes GCM
+     * @param message
+     */
     protected void sendMessageOverGcm(final Message message) {
 
-        new AsyncTask<Void, Void, String>() {
+        new AsyncTask<Void, Void, Void>() {
             @Override
-            protected String doInBackground(Void... params) {
-                String msg = "";
+            protected Void doInBackground(Void... params) {
                 try {
 
                     // Pres GCM se da odslat jen 4KB dat :(
                     if(message instanceof WrongPassMessage) {
                         if(isConnected()) { // jsem prepojenej, celou zpravu poslu postem
                             sendMessageOverHttp(message);
-                            return msg;
+                            return null;
                         } else { // nejsem pripojenej, pres GCM poslu jen zpravu bez fotky a fotku pozdejc
                             ((WrongPassMessage) message).deleteFrontPhoto();
                         }
@@ -294,17 +380,21 @@ public class Worker {
                 } catch (IOException ex) {
 
                 }
-                return msg;
+                return null;
             }
 
             @Override
-            protected void onPostExecute(String msg) {
+            protected void onPostExecute(Void aVoid) {
 
             }
         }.execute(null, null, null);
     }
 
 
+    /**
+     * Je zarízení on-line?
+     * @return
+     */
     public boolean isConnected() {
         ConnectivityManager connMgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
@@ -316,15 +406,28 @@ public class Worker {
     }
 
 
+    /**
+     * Uloz stav uzamknutí do sdilenych dat
+     * @param locked
+     */
     public void setLocked(boolean locked) {
         SharedPreferences.Editor editor = preferences.edit();
         editor.putBoolean("locked", locked);
         editor.commit();
     }
+
+    /**
+     * Je stav zařízení zamknuto?
+     * @return
+     */
     public boolean isLocked() {
         return getPreferences().getBoolean("locked", false); // ve vychozim neni zamklej
     }
 
+
+    /**
+     * Zpravuj spatne zadani hesla
+     */
     public void passwordFailed() {
 
         final WrongPassMessage msg = new WrongPassMessage();
@@ -338,7 +441,6 @@ public class Worker {
             fc.setPictureCallback(new Camera.PictureCallback() { // Callback po vyfoceni fotografie
                 @Override
                 public void onPictureTaken(byte[] data, Camera camera) {
-                    Log.d("FrontCAM", "onPictureTaken");
                     try {
 
                         File pictureFile = fc.getOutputMediaFile();
@@ -352,32 +454,38 @@ public class Worker {
                         msg.setFrontPhoto(pictureFile); // nastav fotku ke zprave
 
                     } catch (FileNotFoundException e) {
-                        Log.d("FrontCAM", "File not found: " + e.getMessage());
+                        Log.d(TAG, "File not found: " + e.getMessage());
                     } catch (IOException e) {
-                        Log.d("FrontCAM", "Error accessing file: " + e.getMessage());
+                        Log.d(TAG, "Error accessing file: " + e.getMessage());
                     } finally {
                         sendMessage(msg); // odesli zpravu
-                        locateDevice();
+                        locateDevice(); // zjisti polohu zařízení
                     }
                 }
             });
             fc.takePicture(); // vyfot fotografii
         }
     }
+
+    /**
+     * Zpracuj sprvne zadani hesla
+     */
     public void passwordSuccess() {
         UnlockMessage msg = new UnlockMessage();
         this.sendMessage(msg);
         this.setLocked(false);
     }
+
+    /**
+     * Zpracuj pozadavek na zjisteni polohy zarizeni
+     */
     public void locateDevice() {
         LocationController lc = new LocationController();
         lc.getLocation(context, new LocationController.LocationResult(){
             @Override
             public void gotLocation(Location location){
-                if(location == null) {
-                    // TODO message nenalezeno
+                if(location == null)
                     return;
-                }
 
                 LocationMessage msg = new LocationMessage() ;
                 msg.setLat( location.getLatitude() );
@@ -389,6 +497,10 @@ public class Worker {
         });
     }
 
+    /**
+     * Vrati retezec obsahujici vypis volani
+     * @return
+     */
     public String getCallLog() {
 
         int limit = 5;
@@ -427,6 +539,11 @@ public class Worker {
         cursor.close();
         return sb.toString();
     }
+
+    /**
+     * Vrati retezec obsahujici vypis SMS
+     * @return
+     */
     public String getSmsLog() {
         int limit = 5;
 
@@ -468,12 +585,31 @@ public class Worker {
 
     }
 
+    /**
+     * Zamkne zařízení
+     * @param password heslo
+     */
     public void startLockMode(String password) {
         startLockMode(password, null, null, false);
     }
+
+    /**
+     * Zamkne zařízení
+     * @param password heslo
+     * @param displayText text na displej
+     * @param ownerPhoneNumber telefoní číslo majitele
+     */
     public void startLockMode(String password, String displayText, String ownerPhoneNumber) {
         startLockMode(password, displayText, ownerPhoneNumber, false);
     }
+
+    /**
+     * Zamkne zařízení
+     * @param password heslo
+     * @param displayText text na displej
+     * @param ownerPhoneNumber telefoní číslo majitele
+     * @param stolenMode Mod ukradení? (spustí zvuk)
+     */
     public void startLockMode(String password, String displayText, String ownerPhoneNumber, Boolean stolenMode) {
         setLocked(true);
 
@@ -495,21 +631,17 @@ public class Worker {
         context.startActivity(intent);
     }
 
+    /**
+     * Spustí mod ukradeni
+     * @param password
+     */
     public void startStolenMode(String password) {
         startLockMode(password, null, null, true);
-//        String toSpeak = "This phone has been stolen";
-//
-//        textToSpeech = new TextToSpeech( context, new TextToSpeech.OnInitListener() {
-//            @Override
-//            public void onInit(int status) {
-//                if(status == TextToSpeech.SUCCESS){
-//                    textToSpeech.setLanguage(Locale.US);
-//                }
-//            }
-//        } );
-//        textToSpeech.setLanguage(Locale.getDefault());
-//        textToSpeech.speak(toSpeak, TextToSpeech.QUEUE_FLUSH, null);
     }
+
+    /**
+     * Vypne mod ukradeni
+     */
     public void stopStolenMode() {
         // posle intent na ukonceni zvuku v lockactivity
 
@@ -521,12 +653,19 @@ public class Worker {
 
     }
 
+    /**
+     * Zasifruje data na karťe
+     */
     public void storageEncrypt() {
         DevicePolicyManager mDPM = (DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
         ComponentName devicePolicyAdmin = new ComponentName(context, DevicePolicyReceiver.class);
 
         mDPM.setStorageEncryption(devicePolicyAdmin, true);
     }
+
+    /**
+     * Uvede zarizeni do tovarniho nastaveni
+     */
     public void wipeData() {
         DevicePolicyManager mDPM = (DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
         mDPM.wipeData( DevicePolicyManager.WIPE_EXTERNAL_STORAGE );

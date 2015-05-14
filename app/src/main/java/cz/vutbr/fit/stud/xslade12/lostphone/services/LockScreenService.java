@@ -8,6 +8,9 @@ import android.os.IBinder;
 
 import cz.vutbr.fit.stud.xslade12.lostphone.recievers.LockScreenReceiver;
 
+/**
+ * Slutba spustici Lockscreen Broadcast Reciver
+ */
 public class LockScreenService extends Service {
 
     BroadcastReceiver receiver;
@@ -19,13 +22,6 @@ public class LockScreenService extends Service {
 
     @Override
     public void onCreate() {
-//        KeyguardManager.KeyguardLock key;
-//        KeyguardManager km = (KeyguardManager)getSystemService(KEYGUARD_SERVICE);
-//
-//        //This is deprecated, but it is a simple way to disable the lockscreen in code
-//        key = km.newKeyguardLock("IN");
-//
-//        key.disableKeyguard();
 
         //Start listening for the Screen On, Screen Off, and Boot completed actions
         IntentFilter filter = new IntentFilter();

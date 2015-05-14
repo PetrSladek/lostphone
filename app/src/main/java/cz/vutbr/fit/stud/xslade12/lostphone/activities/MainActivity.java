@@ -57,13 +57,6 @@ public class MainActivity extends Activity {
     private Button btnGcmRegistrationToggle;
 
     /**
-     * ID projektu z Google API konzole
-     *
-     * From https://console.developers.google.com/
-     */
-    String GCM_SENDER_ID = "941272288463";
-
-    /**
      * Tag pro logování
      */
     static final String TAG = "LostPhone";
@@ -229,7 +222,7 @@ public class MainActivity extends Activity {
                     if (gcm == null)
                         gcm = GoogleCloudMessaging.getInstance(MainActivity.this);
 
-                    gcmId = gcm.register(GCM_SENDER_ID);
+                    gcmId = gcm.register(Worker.GCM_SENDER_ID);
 
                     // Posle gcmID zarizeni na server, kde ho zaregistruje
                     sendGcmIdToServer();
