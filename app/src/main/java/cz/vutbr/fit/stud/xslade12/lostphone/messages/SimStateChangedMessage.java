@@ -1,7 +1,8 @@
 package cz.vutbr.fit.stud.xslade12.lostphone.messages;
 
 /**
- * Created by Peggy on 14.3.2015.
+ * Zpráva o tom, ze se změnil stav SIM karty
+ * @author Petr Sládek <xslade12@stud.fit.vutbr.cz>
  */
 public class SimStateChangedMessage extends Message {
 
@@ -10,25 +11,64 @@ public class SimStateChangedMessage extends Message {
     }
 
 
-    protected String imei;
+    /**
+     * IMEI
+     *
+     * International Mobile Equipment Identity. Jde o unikátní číslo přidělené výrobcem mobilnímu telefonu.
+     */
+    protected String imei; //
 
+    /**
+     * IMSI
+     *
+     * International Mobile Subscriber Identity. Jde o unikátní číslo přidělené mobilním operátorem pro SIM kartu v mobilní síti GSM nebo UMTS. Může být použito v dalších sítích jako např. CDMA.
+     */
     protected String subscriberId;
 
+
+    /**
+     * MSISDN
+     *
+     * MSISDN je celosvětově jednoznačné číslo, které identifikuje účastníka ve veřejné telefonní síti
+     */
     protected String phoneNumber;
 
+    /**
+     * Operátor přihlášené sítě
+     */
     protected String networkOperator;
 
+    /**
+     * Název operátora přihlášené sítě
+     */
     protected String networkOperatorName;
 
+    /**
+     * ISO kód Země operátora přihlášené sítě
+     */
     protected String networkCountryIso;
 
+    /**
+     * Operátor sítě vyddavajici SIM kartu
+     */
     protected String simOperator;
 
+    /**
+     * Název operátora sítě vyddavajici SIM kartu
+     */
     protected String simOperatorName;
 
+    /**
+     * Seriové číslo SIM karty
+     */
+    protected String simSerialNumber;
+
+
+    /**
+     * ISO kód Země operátora vydávající SIM kartu
+     */
     protected String simCountryIso;
 
-    protected String simSerialNumber;
 
 
     public String getImei() {

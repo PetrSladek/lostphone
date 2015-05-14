@@ -1,14 +1,18 @@
 package cz.vutbr.fit.stud.xslade12.lostphone.messages;
 
+/**
+ * Zpráva o tom, kde se zařízení nachází
+ * @author Petr Sládek <xslade12@stud.fit.vutbr.cz>
+ */
 public class LocationMessage extends Message {
 
     public LocationMessage() {
         this.type = Message.TYPE_LOCATION;
     }
 
-    public double lat;
+    protected double lat;
 
-    public double lng;
+    protected double lng;
 
 
     public double getLat() {

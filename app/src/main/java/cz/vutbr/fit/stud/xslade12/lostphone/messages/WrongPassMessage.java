@@ -7,14 +7,20 @@ import java.io.File;
 import retrofit.http.Part;
 import retrofit.mime.TypedFile;
 
+/**
+ * Zpráva o tom, že bylo špatně zadané heslo
+ * @author Petr Sládek <xslade12@stud.fit.vutbr.cz>
+ */
 public class WrongPassMessage extends Message {
 
     public WrongPassMessage() {
         this.type = Message.TYPE_WRONGPASS;
     }
 
+    /**
+     * Soubor v FS s fotkou z přední kamery
+     */
     private File frontPhoto;
-
 
 
     public File getFrontPhoto() {

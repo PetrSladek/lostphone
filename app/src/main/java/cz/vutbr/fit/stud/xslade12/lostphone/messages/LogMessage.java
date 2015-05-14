@@ -1,15 +1,18 @@
 package cz.vutbr.fit.stud.xslade12.lostphone.messages;
 
+/**
+ * Zpráva s vypisi volani a sms
+ * @author Petr Sládek <xslade12@stud.fit.vutbr.cz>
+ */
 public class LogMessage extends Message {
 
     public LogMessage() {
         this.type = Message.TYPE_LOG;
     }
 
-    public String callLog;
+    protected String callLog;
 
-    public String smsLog;
-
+    protected String smsLog;
 
 
     public String getCallLog() {
