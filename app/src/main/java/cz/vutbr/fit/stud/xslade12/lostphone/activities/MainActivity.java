@@ -131,11 +131,11 @@ public class MainActivity extends Activity {
 
             if (!isGCMRegistered()) { // kdyz  neni zaregistrovano tak zaregistrujeme
                 System.out.println("RegID: - neni zaregistrovano -");
-                this.setTitle("- neni zeregistrovano -");
+                //this.setTitle("- neni zeregistrovano -");
                 registerGCMInBackground();
             } else {
                 System.out.println("RegID: " + gcmId);
-                this.setTitle(gcmId);
+                //this.setTitle(gcmId);
             }
         } else {
             Log.i(TAG, "No valid Google Play Services APK found.");
