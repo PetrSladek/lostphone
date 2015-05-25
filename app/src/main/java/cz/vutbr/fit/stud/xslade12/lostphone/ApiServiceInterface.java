@@ -23,7 +23,7 @@ import retrofit.mime.TypedString;
  */
 public interface ApiServiceInterface {
 
-    public static final String ENDPOINT = "http://local.sdhklepacov.cz/api/";
+    public static final String ENDPOINT = "http://lostphone.petr-sladek.cz/api/";
 
     @POST("/messages/")
     void createMessage(@Header("Device") String gcmId, @Body Message message, Callback<String> cb);

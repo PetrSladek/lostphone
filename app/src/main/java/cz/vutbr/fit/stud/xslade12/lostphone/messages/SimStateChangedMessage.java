@@ -29,7 +29,7 @@ public class SimStateChangedMessage extends Message {
     /**
      * MSISDN
      *
-     * MSISDN je celosvětově jednoznačné číslo, které identifikuje účastníka ve veřejné telefonní síti
+     * Mobile Subscriber ISDN Number je celosvětově jednoznačné číslo, které identifikuje účastníka ve veřejné telefonní síti
      */
     protected String phoneNumber;
 
